@@ -100,6 +100,7 @@ export class MultiselectRecords extends React.Component<any> {
                     value={this._searchValue}
                     styles={{ root: { flex: 1, position: 'relative', marginTop: 10 } }}
                     disabled={this.props.isControlDisabled}
+                    placeholder="Search..."
                 />
             );
         } else {
