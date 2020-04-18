@@ -19,7 +19,7 @@ What this will do is to insert the data split by the delimiter you have selected
 1. Field -> It is the field that will contain the data
 2. Entity Name -> Records from this entity name will be displayed
 3. Filter -> Filter to reduce the amount of data that will be displayed in your list. This is explained in the next section.
-4. Field Filter Values -> This will behave dynamically for the filter. This is explained in the next section.
+4. Field Filter Values -> This will behave dynamically for the filter. They ARE REQUIRED to be split by comma (,) This is explained in the next section.
 5. Data -> Which field from the entity name selected (2) you want to be set in the field (1)
 6. Columns -> To retrieve and display the data you need to set the columns with the following syntax: Display Name, fieldName; Account Name,name
 7. Header Visible -> Set if the header will be visible in the list displayed.
@@ -47,10 +47,17 @@ We have a control in a single text field that is retrieving contacts.
 We want to retrieve the contacts which full name contains our input and the parentcustomerid is the id of the record we are right now.
 
 For that we will put the following parameters:
-- Filter -> ?$filter=contains(fullname, '{0}') and _parentcustomerid_value eq {1}
-- Field Filter Values -> accountid
+- Filter -> ?$filter=contains(fullname, '{0}') and _parentcustomerid_value eq {1} and contactcountry eq {2}
+- Field Filter Values -> accountid,country
 
 This will filter our contacts with the account we are right now and it will be filtered more when we search in our box.
+
+### Example with two parameters
+
+- Filter -> ?$filter=contains(fullname, '{0}') and _parentcustomerid_value eq {1} and contactcountry eq {2}
+- Field Filter Values -> accountid,country
+
+This will filter our contacts with the account we are right now and its country plus it will be filtered more when we search in our box.
 
 ## Example of configuration
 
