@@ -2,7 +2,7 @@
 
 ## Description
 
-This control has been created in order to select many records from an entity.
+This control has been created to select many records from an entity.
 What this will do is to insert the data split by the delimiter you have selected in your control in the single text field this is attached.
 This can be useful to retrieve a "list of records" from a single field and it can be used in a plugin.
 
@@ -34,10 +34,10 @@ How it is set is to take a fetchxml or a WebApi query as ?$filter= ...
 This has been implemented with parameters. All of our parameters will be set with the following syntax: {1}
 
 - {0} will be ALWAYS the search box input.
-This means that if you set in your filter: ?$filter=contains(name,'{0}') everytime you input some text you will be querying against the webapi
+This means that if you set in your filter: ?$filter=contains(name,'{0}') every time you input some text you will be querying against the webapi
 This can be used as well in the fetchxml.
 
-      THIS IS QUITE IMPORTANT BECAUSE WILL REDUCE THE AMOUNT OF RECORDS THAT ARE GOING TO APPEAR. THE LIST WILL BE SHOWN ONLY WHEN 50 ITEMS ARE RETRIEVED
+      THIS IS QUITE IMPORTANT BECAUSE WILL REDUCE THE NUMBER OF RECORDS THAT ARE GOING TO APPEAR. THE LIST WILL BE SHOWN ONLY WHEN 50 ITEMS ARE RETRIEVED
 
 - {1} {2} are the parameters you set in your Field Filter Values.
 This means that if you need to filter your query based on a field in the entity this control is set, you have to add that field in your query.
