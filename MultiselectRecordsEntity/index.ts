@@ -90,6 +90,9 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		this.renderElement()
 	}
 
+	/**
+	 * Retrieves the records when the filter has triggered
+	 */
 	private async retrieveRecordsFromFetch(): Promise<any> {
 		if (this._isFake == false) {
 			if (this._isFetchXml == true) {
@@ -104,6 +107,9 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		this.renderElement();
 	}
 
+	/**
+	 * Event when the main field is changed
+	 */
 	private eventOnChangeValue(newValue: string) {
 		if (this.props.inputValue !== newValue) {
 			this._value = newValue;
@@ -111,6 +117,9 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		}
 	}
 
+	/**
+	 * Event when the search box has changed
+	 */
 	private async triggerFilter(newInput: string) {
 		this._filter = this._originalFilter.replace("{0}", newInput);
 		if (this._filterDynamicValues != "") {
@@ -121,6 +130,9 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		this.retrieveRecordsFromFetch();
 	}
 
+	/**
+	 * Parsed and fill the new fulter with the dynamic values from the entity record
+	 */
 	private async filteredUrlFromDynamicValues(_filter: string): Promise<string> {
 		const arrayDynamicValues: any = this._filterDynamicValues.split(",");
 		const result = await MultiselectModel.GetDataFromEntity(this._context, this._entityRecordName, this._entityRecordId, this._filterDynamicValues);
@@ -132,6 +144,9 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		return _filter;
 	}
 
+	/**
+	 * Method to render the component
+	 */
 	private renderElement(): void {
 		ReactDOM.render(
 			React.createElement(

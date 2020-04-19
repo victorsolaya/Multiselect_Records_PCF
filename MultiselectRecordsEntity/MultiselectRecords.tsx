@@ -11,14 +11,14 @@ export class MultiselectRecords extends React.Component<any> {
     private _allItems: [];
     private _columns: any;
     private _textFieldValue: string;
-    private _loading: boolean;
     private _selectedItems: any;
     private _selectedRecordsItems: []
     private _searchValue: string;
+    private _isError: boolean;
     constructor(props: any) {
         super(props);
         initializeIcons();
-        this._allItems = this.props.records;
+        this._allItems = this.props.records != -1 ? this.props.records : [];
         this._columns = this.props.columns;
         this._textFieldValue = this.props.inputValue || "";
         this._searchValue = "";
@@ -26,8 +26,9 @@ export class MultiselectRecords extends React.Component<any> {
         this._selectedRecordsItems = [];
         this._selection = new Selection();
         this.state = {
-            records: this.props.records
+            records: this.props.records != -1 ? this.props.records : []
         }
+        this._isError = this.props.records != -1 ? false : true;
     }
 
     public componentDidUpdate(prevProps: any): void {
@@ -35,27 +36,33 @@ export class MultiselectRecords extends React.Component<any> {
         if (this.props != prevProps) {
             this.setState((prevState: any): any => {
                 this._allItems = []
-                this._selection.setAllSelected(false);
-                this._selectedRecordsItems.forEach((item) => {
-                    this._allItems.push(item)
-                })
-                const propsRecords: [] = this.props.records;
-                propsRecords.forEach((item) => {
-                    const index = this._allItems.findIndex(x => x[this.props.data] === item[this.props.data]);
-                    if (index == -1) {
+                if (this.props.records !== -1) {
+                    this._selection.setAllSelected(false);
+                    this._selectedRecordsItems.forEach((item) => {
                         this._allItems.push(item)
-                    }
-                })
-                this._loading = false;
-
-                setTimeout(() => {
-                    this.selectIndexFromNames();
-                }, 0)
+                    })
+                    const propsRecords: [] = this.props.records;
+                    propsRecords.forEach((item) => {
+                        const index = this._allItems.findIndex(x => x[this.props.data] === item[this.props.data]);
+                        if (index == -1) {
+                            this._allItems.push(item)
+                        }
+                    })
+                    this._isError = false;
+                    setTimeout(() => {
+                        this.selectIndexFromNames();
+                    }, 0)
+                } else {
+                    this._isError = true;
+                }
                 return prevState;
             });
         }
     }
 
+    /**
+     * When component mounts to select the indexes.
+     */
     public componentDidMount(): void {
         if (this._textFieldValue != "") {
             setTimeout(() => {
@@ -64,6 +71,9 @@ export class MultiselectRecords extends React.Component<any> {
         }
     }
 
+    /**
+     * Method to select item when you click on the row
+     */
     private onRenderRow(props: IDetailsRowProps, defaultRender?: IRenderFunction<IDetailsRowProps>): JSX.Element {
         return (
             <div data-selection-toggle="true">
@@ -72,6 +82,9 @@ export class MultiselectRecords extends React.Component<any> {
         );
     };
 
+    /**
+     * Renders the main text
+     */
     private _showMainTextField(): JSX.Element {
         if (this.props.isControlVisible) {
             return (
@@ -91,6 +104,9 @@ export class MultiselectRecords extends React.Component<any> {
         }
     }
 
+    /**
+     * Renders the search box
+     */
     private _showSearchTextField(): JSX.Element {
         if (this.props.isControlVisible) {
             return (
@@ -101,6 +117,7 @@ export class MultiselectRecords extends React.Component<any> {
                     styles={{ root: { flex: 1, position: 'relative', marginTop: 10 } }}
                     disabled={this.props.isControlDisabled}
                     placeholder="Search..."
+                    errorMessage={this._isError ? "More than 50 records have been retrieved. Please, make it less or equals 50." : ""}
                 />
             );
         } else {
@@ -110,6 +127,9 @@ export class MultiselectRecords extends React.Component<any> {
         }
     }
 
+    /**
+     * Renders the list and the buttons
+     */
     private _showDetailsList(): JSX.Element {
 
         if (this._allItems.length > 0) {
@@ -171,19 +191,14 @@ export class MultiselectRecords extends React.Component<any> {
         }
     }
 
+    /**
+     * Main method to render
+     */
     public render(): JSX.Element {
-
-        let spinner;
-
         /**
          * If _allItems is more than 0 then we will create the list.
          * _allItems will populate once it request from fetch
          */
-        if (this._loading) {
-            spinner = <Spinner size={SpinnerSize.medium} styles={{
-                root: { margin: 10 }
-            }} />
-        }
 
         return (
             <div className={"divContainer"}>
@@ -196,7 +211,6 @@ export class MultiselectRecords extends React.Component<any> {
                         {this._showSearchTextField()}
 
                     </Stack>
-                    {spinner}
                     {this._showDetailsList()}
 
                 </div>
@@ -204,6 +218,9 @@ export class MultiselectRecords extends React.Component<any> {
         );
     }
 
+    /**
+     * When the main field is changed
+     */
     private userInputOnChange = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
         // Get the target
         const target = event.target as HTMLTextAreaElement;
@@ -215,21 +232,22 @@ export class MultiselectRecords extends React.Component<any> {
     }
 
     /**
-     * Everytime is triggered the onKeyUp it will trigger this functionality
+     * Main trigger when the searchbox is changed
      */
     private filterRecords = async (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>): Promise<any> => {
         // Get the target
         const target = event.target as HTMLTextAreaElement;
         //Set the value of our textfield to the input
         this._searchValue = target.value;
-        // Await for the fetchRequest to response
-        this._loading = true;
         //This is needed for loading the textFieldValue
         this.setState((prevState: any): any => prevState);
         // Send filter outside
         this.props.triggerFilter(this._searchValue)
     };
 
+    /**
+     * Event when the select elements is clicked
+     */
     private setFieldValue = (): void => {
         this.fillSelectedItems();
         const valueToBeAssigned: string = this._selectedItems.join(this.props.delimiter);
@@ -238,6 +256,9 @@ export class MultiselectRecords extends React.Component<any> {
         this.props.eventOnChangeValue(valueToBeAssigned);
     }
 
+    /**
+     * Method to fill the selected items from the box
+     */
     private fillSelectedItems = (): void => {
         const listSelection: any = this._selection.getSelection();
         const listArray: any = Array.isArray(listSelection) ? listSelection : [listSelection];
@@ -250,6 +271,9 @@ export class MultiselectRecords extends React.Component<any> {
         }
     }
 
+    /**
+     * Selects the rows
+     */
     private selectIndexFromNames = (): void => {
         var values = this._textFieldValue.split(this.props.delimiter);
         for (var item of values) {
@@ -261,6 +285,9 @@ export class MultiselectRecords extends React.Component<any> {
         this.fillSelectedItems();
     }
 
+    /**
+     * When close button is triggered
+     */
     private clearItems = (): void => {
         this._allItems = [];
         this._searchValue = "";
