@@ -33,13 +33,17 @@ How it is set is to take a fetchxml or a WebApi query as ?$filter= ...
 
 This has been implemented with parameters. All of our parameters will be set with the following syntax: {1}
 
-- {0} will be the search box input.
+- {0} will be ALWAYS the search box input.
 This means that if you set in your filter: ?$filter=contains(name,'{0}') everytime you input some text you will be querying against the webapi
-This can be used as well in the fetchxml
+This can be used as well in the fetchxml.
+
+      THIS IS QUITE IMPORTANT BECAUSE WILL REDUCE THE AMOUNT OF RECORDS THAT ARE GOING TO APPEAR. THE LIST WILL BE SHOWN ONLY WHEN 50 ITEMS ARE RETRIEVED
 
 - {1} {2} are the parameters you set in your Field Filter Values.
 This means that if you need to filter your query based on a field in the entity this control is set, you have to add that field in your query.
 The Field Filter Values is a Xrm.Webapi call to the record as we have the entityid and the entityname.
+
+      THESE ARE OPTIONAL, THEY ARE REPRESENTED BY {1}, {2}, THERE IS NO LIMIT, BUT WILL ALWAYS BE REFERENCE TO THE ENTITY YOU ARE RIGHT NOW
 
 ### Example
 
@@ -48,8 +52,8 @@ We have a control in a single text field that is retrieving contacts.
 We want to retrieve the contacts which full name contains our input and the parentcustomerid is the id of the record we are right now.
 
 For that we will put the following parameters:
-- Filter -> ?$filter=contains(fullname, '{0}') and _parentcustomerid_value eq {1} and contactcountry eq {2}
-- Field Filter Values -> accountid,country
+- Filter -> ?$filter=contains(fullname, '{0}') and _parentcustomerid_value eq {1}
+- Field Filter Values -> accountid
 
 This will filter our contacts with the account we are right now and it will be filtered more when we search in our box.
 
