@@ -2,7 +2,12 @@
 <manifest>
   <control namespace="VictorSanchez" constructor="MultiselectRecordsEntity" version="0.0.1" display-name-key="Multiselect Records Entity" description-key="Multiple selector for several records and insert in a string" control-type="standard">
     <!-- property node identifies a specific, configurable piece of data that the control expects from CDS -->
-    <property name="field" display-name-key="Field" description-key="Field to be populated with the selected values" of-type="SingleLine.Text" usage="bound" required="true" />
+     <type-group name="textareas">
+        <type>SingleLine.Text</type>
+        <type>SingleLine.TextArea</type>
+        <type>Multiple</type>
+      </type-group>
+    <property name="field" display-name-key="Field" description-key="Field to be populated with the selected values" of-type-group="textareas" usage="bound" required="true" />
     <property name="entityName" display-name-key="Entity Name" description-key="Name of the entity from which you want to return results" of-type="SingleLine.Text" usage="input" required="true" />
     <property name="filter" display-name-key="Filter" description-key="Query to filter the results to return." of-type="SingleLine.TextArea" usage="input" required="true" />
     <property name="filterDynamicValues" display-name-key="Field Filter Values" description-key="Fields from the record entity to filter your query split by comma." of-type="SingleLine.Text" usage="input" required="false" />
@@ -13,6 +18,7 @@
       <value name="false" display-name-key="False" description-key="false">False</value>
     </property>
     <property name="delimiterForData" display-name-key="Delimiter for the exposed data" description-key="Character that will split the results in the output" of-type="SingleLine.Text" usage="input" required="true" />
+    
     <!-- 
       Property node's of-type attribute can be of-type-group attribute. 
       Example:
