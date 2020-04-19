@@ -64,7 +64,7 @@ This will filter our contacts with the account we are right now and it will be f
 
 This will filter our contacts with the account we are right now and its country plus it will be filtered more when we search in our box.
 
-## Example of configuration
+## Example of configuration and demo
 
 ![Form configuration](assets/configuration.png)
 
@@ -73,6 +73,12 @@ This will filter our contacts with the account we are right now and its country 
 ![Example 3](assets/example-3.png)
 
 ![Example Demo](assets/example-demo.gif)
+
+## Example demo with Guid of account instead name
+
+![Form configuration guid](assets/configuration-guid.png)
+
+![Example guid](assets/example-demo-2.gif)
 
 ## Issues / Questions
 
