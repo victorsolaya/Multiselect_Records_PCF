@@ -84,3 +84,10 @@ This will filter our contacts with the account we are right now and its country 
 
 If you have any questions or issues regarding this control, please, raise an issue in github or send me an email: me@victorsolaya.com
 
+## Bugs known from PCF
+
+When you are trying to copy and paste a complete FetchXml probably you are limited to 100 characters. That is because a known bug, but here is the answer to this problem:
+[Characters problems](https://powerusers.microsoft.com/t5/Power-Apps-Pro-Dev-ISV/Problem-with-maximum-length-of-Input-parameters-which-are-of/m-p/289788/highlight/true#M231)
+
+To sum up, go to your dev tools and change the max length of that field from 100 to 4000 (That is the maximum allowed for a TextArea parameter).
+
