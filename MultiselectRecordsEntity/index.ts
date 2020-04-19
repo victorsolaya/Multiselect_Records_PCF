@@ -70,10 +70,10 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		this.props.delimiter = this._context.parameters.delimiterForData.raw || ";";
 		this.props.data = this._context.parameters.data.raw || "name";
 		this._filterDynamicValues = this._context.parameters.filterDynamicValues.raw || "";
-		this._isFake = false;
 		const contextPage = (context as any).page;
 		this._entityRecordId = contextPage.entityId;
 		this._entityRecordName = contextPage.entityTypeName;
+		this._isFake = false;
 	}
 
 
@@ -105,7 +105,7 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 	}
 
 	private eventOnChangeValue(newValue: string) {
-		if (this.props.userInput !== newValue) {
+		if (this.props.inputValue !== newValue) {
 			this._value = newValue;
 			this._notifyOutputChanged();
 		}
@@ -114,9 +114,10 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 	private async triggerFilter(newInput: string) {
 		this._filter = this._originalFilter.replace("{0}", newInput);
 		if (this._filterDynamicValues != "") {
-			this._filter = await this.filteredUrlFromDynamicValues(this._filter);
+			if (this._isFake == false) {
+				this._filter = await this.filteredUrlFromDynamicValues(this._filter);
+			}
 		}
-		debugger
 		this.retrieveRecordsFromFetch();
 	}
 
@@ -125,7 +126,6 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		const result = await MultiselectModel.GetDataFromEntity(this._context, this._entityRecordName, this._entityRecordId, this._filterDynamicValues);
 		arrayDynamicValues.forEach((value: string, index: number) => {
 			index++;
-			debugger
 			var apiValue = result[value];
 			_filter = _filter.replace(`{${index}}`, apiValue);
 		});

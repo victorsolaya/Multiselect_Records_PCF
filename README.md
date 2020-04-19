@@ -62,4 +62,15 @@ This will filter our contacts with the account we are right now and its country 
 
 ## Example of configuration
 
-## Control demo
+![Form configuration](assets/configuration.png)
+
+![Example](assets/example.png)
+![Example 2](assets/example-2.png)
+![Example 3](assets/example-3.png)
+
+![Example Demo](assets/example-demo.gif)
+
+## Issues / Questions
+
+If you have any questions or issues regarding this control, please, raise an issue in github or send me an email: me@victorsolaya.com
+

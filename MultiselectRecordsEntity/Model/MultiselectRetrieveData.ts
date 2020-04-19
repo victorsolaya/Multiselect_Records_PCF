@@ -4,14 +4,21 @@ export class MultiselectModel {
     public static GetDataFromApi(context: ComponentFramework.Context<IInputs>, entityName: string, filter: string) {
         return context.webAPI.retrieveMultipleRecords(entityName, filter)
             .then(function (results) {
-                return results?.entities;
+                if (results != null && results.entities != null && results.entities.length > 0 && results.entities.length <= 50) {
+                    return results?.entities;
+                }
+                return [];
             })
     }
 
     public static GetDataFromApiWithFetchXml(context: ComponentFramework.Context<IInputs>, entityName: string, fetchxml: string) {
         return context.webAPI.retrieveMultipleRecords(entityName, "?fetchXml=" + fetchxml)
             .then(function (results) {
-                return results?.entities;
+                if (results != null && results.entities != null && results.entities.length > 0 && results.entities.length <= 50) {
+
+                    return results?.entities;
+                }
+                return [];
             })
     }
 

@@ -3,6 +3,8 @@ import * as React from "react";
 import { Stack, IDetailsRowProps, IRenderFunction, CommandBarButton, PrimaryButton, IIconProps, TextField, DetailsList, DetailsListLayoutMode, Selection, SelectionMode, initializeIcons, Spinner, SpinnerSize } from 'office-ui-fabric-react/lib';
 import { textFieldStyles } from './MultiselectRecords.styles'
 const clearIcon: IIconProps = { iconName: 'Clear' };
+const acceptIcon: IIconProps = { iconName: 'Accept', styles: { root: { color: 'white' } } };
+
 
 export class MultiselectRecords extends React.Component<any> {
     private _selection: Selection;
@@ -22,9 +24,7 @@ export class MultiselectRecords extends React.Component<any> {
         this._searchValue = "";
         this._selectedItems = [];
         this._selectedRecordsItems = [];
-        this._selection = new Selection({
-            onSelectionChanged: () => { this._getSelectionDetails() }
-        });
+        this._selection = new Selection();
         this.state = {
             records: this.props.records
         }
@@ -36,8 +36,7 @@ export class MultiselectRecords extends React.Component<any> {
             this.setState((prevState: any): any => {
                 this._allItems = []
                 this._selection.setAllSelected(false);
-                prevState.userInput = this.props.userInput;
-                this._selectedRecordsItems.forEach((item, index) => {
+                this._selectedRecordsItems.forEach((item) => {
                     this._allItems.push(item)
                 })
                 const propsRecords: [] = this.props.records;
@@ -47,10 +46,11 @@ export class MultiselectRecords extends React.Component<any> {
                         this._allItems.push(item)
                     }
                 })
+                this._loading = false;
+
                 setTimeout(() => {
                     this.selectIndexFromNames();
                 }, 0)
-                this._loading = false;
                 return prevState;
             });
         }
@@ -110,34 +110,37 @@ export class MultiselectRecords extends React.Component<any> {
         }
     }
 
-    private _showButtonSelectElements(): JSX.Element {
-        if (this._allItems.length > 0) {
-            return (
-                <PrimaryButton text="Select Elements" allowDisabledFocus onClick={this.setFieldValue} />
-            );
-        } else {
-            return (
-                <></>
-            );
-        }
-    }
-
     private _showDetailsList(): JSX.Element {
 
         if (this._allItems.length > 0) {
 
             return (
                 <Stack>
-                    <CommandBarButton iconProps={clearIcon} text="Close" onClick={this.clearItems} styles={{
-                        root: {
-                            flex: 1,
-                            width: 100,
-                            padding: 10,
-                            zIndex: 1995,
-                            backgroundColor: 'lightgrey'
-                        }
-                    }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1, alignContent: 'space-between' }}>
+                        <CommandBarButton iconProps={acceptIcon} text="Select Elements" onClick={this.setFieldValue} styles={{
+                            root: {
+                                flex: 1,
+                                width: 200,
+                                padding: 10,
+                                zIndex: 1995,
+                                backgroundColor: '#0078D4',
+                                color: 'white',
+                                textAlign: 'left'
+                            }
+                        }} />
 
+                        <CommandBarButton iconProps={clearIcon} text="Close" onClick={this.clearItems} styles={{
+                            root: {
+                                flex: 1,
+                                width: 200,
+                                padding: 10,
+                                zIndex: 1995,
+                                backgroundColor: 'lightgrey',
+                                textAlign: 'left'
+                            }
+                        }} />
+
+                    </div>
                     <DetailsList
                         isHeaderVisible={this.props.headerVisible}
                         items={this._allItems}
@@ -187,11 +190,11 @@ export class MultiselectRecords extends React.Component<any> {
                 <div className={"control"} >
                     <Stack style={{ flexDirection: 'row' }}>
                         {this._showMainTextField()}
-                        {this._showButtonSelectElements()}
 
                     </Stack>
                     <Stack style={{ flexDirection: 'row' }}>
                         {this._showSearchTextField()}
+
                     </Stack>
                     {spinner}
                     {this._showDetailsList()}
@@ -208,6 +211,7 @@ export class MultiselectRecords extends React.Component<any> {
         this._textFieldValue = target.value;
         //This is needed for loading the textFieldValue
         this.setState((prevState: any): any => prevState);
+        this.props.eventOnChangeValue(this._textFieldValue);
     }
 
     /**
@@ -219,14 +223,22 @@ export class MultiselectRecords extends React.Component<any> {
         //Set the value of our textfield to the input
         this._searchValue = target.value;
         // Await for the fetchRequest to response
-        this._loading = false;
+        this._loading = true;
         //This is needed for loading the textFieldValue
         this.setState((prevState: any): any => prevState);
         // Send filter outside
         this.props.triggerFilter(this._searchValue)
     };
 
-    private _getSelectionDetails = (): void => {
+    private setFieldValue = (): void => {
+        this.fillSelectedItems();
+        const valueToBeAssigned: string = this._selectedItems.join(this.props.delimiter);
+
+        this._textFieldValue = valueToBeAssigned;
+        this.props.eventOnChangeValue(valueToBeAssigned);
+    }
+
+    private fillSelectedItems = (): void => {
         const listSelection: any = this._selection.getSelection();
         const listArray: any = Array.isArray(listSelection) ? listSelection : [listSelection];
         const arrayItems: [] = listArray;
@@ -238,25 +250,21 @@ export class MultiselectRecords extends React.Component<any> {
         }
     }
 
-    private setFieldValue = (): void => {
-        const valueToBeAssigned: string = this._selectedItems.join(this.props.delimiter);
-        this._textFieldValue = valueToBeAssigned;
-        this.props.eventOnChangeValue(valueToBeAssigned);
-    }
-
     private selectIndexFromNames = (): void => {
         var values = this._textFieldValue.split(this.props.delimiter);
         for (var item of values) {
             var index = this._allItems.findIndex(x => x[this.props.data] == item);
-            this._selection.setIndexSelected(index, true, true);
+            if (index !== -1) {
+                this._selection.setIndexSelected(index, true, true);
+            }
         }
+        this.fillSelectedItems();
     }
 
     private clearItems = (): void => {
         this._allItems = [];
+        this._searchValue = "";
         this.setState((prevState: any): any => prevState);
-
-
     }
 
 }
