@@ -80,6 +80,11 @@ This will filter our contacts with the account we are right now and its country 
 
 ![Example guid](assets/example-demo-2.gif)
 
+## Example error when returned records are more than 50.
+
+![Error](assets/error.png)
+
+
 ## Issues / Questions
 
 If you have any questions or issues regarding this control, please, raise an issue in github or send me an email: me@victorsolaya.com
