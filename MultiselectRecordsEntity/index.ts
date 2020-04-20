@@ -121,7 +121,7 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 	 * Event when the search box has changed
 	 */
 	private async triggerFilter(newInput: string) {
-		this._filter = this._originalFilter.replace("{0}", newInput);
+		this._filter = this._originalFilter.replace(/\{0\}/g, newInput);
 		if (this._filterDynamicValues != "") {
 			if (this._isFake == false) {
 				this._filter = await this.filteredUrlFromDynamicValues(this._filter);
@@ -139,7 +139,9 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		arrayDynamicValues.forEach((value: string, index: number) => {
 			index++;
 			var apiValue = result[value];
-			_filter = _filter.replace(`{${index}}`, apiValue);
+			var replaceindex = `${index}`;
+			var regex = new RegExp("\\{" + replaceindex + "\\}", "g")
+			_filter = _filter.replace(regex, apiValue);
 		});
 		return _filter;
 	}
