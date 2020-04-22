@@ -167,7 +167,7 @@ export class MultiselectRecords extends React.Component<any> {
                         columns={this._columns}
                         setKey="set"
                         selection={this._selection}
-                        selectionMode={SelectionMode.multiple}
+                        selectionMode={this.props.isMultiple ? SelectionMode.multiple : SelectionMode.single}
                         layoutMode={DetailsListLayoutMode.justified}
                         selectionPreservedOnEmptyClick={true}
                         ariaLabelForSelectionColumn="Toggle selection"
