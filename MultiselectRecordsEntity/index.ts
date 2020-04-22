@@ -40,7 +40,8 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		data: "",
 		delimiter: "",
 		isControlDisabled: false,
-		isControlVisible: true
+		isControlVisible: true,
+		isMultiple: true
 	}
 
 	/**
@@ -73,6 +74,8 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		const contextPage = (context as any).page;
 		this._entityRecordId = contextPage.entityId;
 		this._entityRecordName = contextPage.entityTypeName;
+		const isMultiple = this._context.parameters.isMultiple.raw || "True";
+		this.props.isMultiple = isMultiple == "True" ? true : false;
 		this._isFake = false;
 	}
 
