@@ -1,5 +1,6 @@
+import { IColumnObject } from '../MultiselectRecords.types'
 export class Utilities {
-    static parseColumns = (columns: string): [any] => {
+    static parseColumns = (columns: string): [IColumnObject] => {
         let parsedColumns: any = [];
         const arrayColumns = columns.split(';');
         var index = 1;
