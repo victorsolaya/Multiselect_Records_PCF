@@ -7,10 +7,18 @@ export class MultiselectModel {
     public static GetDataFromApi(context: ComponentFramework.Context<IInputs>, entityName: string, filter: string) {
         return context.webAPI.retrieveMultipleRecords(entityName, filter)
             .then(function (results) {
+                // If the results are == or less than 50 GO FOR IT
+
                 if (results != null && results.entities != null && results.entities.length > 0 && results.entities.length <= 50) {
                     return results?.entities;
                 }
-                return -1;
+                // If results are more than 50 break
+
+                if (results.entities.length > 50) {
+                    return -1;
+                }
+                // If no results
+                return -2;
             })
     }
 
@@ -20,10 +28,16 @@ export class MultiselectModel {
     public static GetDataFromApiWithFetchXml(context: ComponentFramework.Context<IInputs>, entityName: string, fetchxml: string) {
         return context.webAPI.retrieveMultipleRecords(entityName, "?fetchXml=" + fetchxml)
             .then(function (results) {
+                // If the results are == or less than 50 GO FOR IT
                 if (results != null && results.entities != null && results.entities.length > 0 && results.entities.length <= 50) {
                     return results?.entities;
                 }
-                return -1;
+                // If results are more than 50 break
+                if (results.entities.length > 50) {
+                    return -1;
+                }
+                // If no results
+                return -2;
             })
     }
 

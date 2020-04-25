@@ -54,6 +54,7 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 	 */
 	public init(context: ComponentFramework.Context<IInputs>, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container: HTMLDivElement) {
 		// Add control initialization code
+		debugger
 		this._context = context;
 		this._container = container;
 		this._notifyOutputChanged = notifyOutputChanged;
@@ -137,7 +138,7 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 	 * Parsed and fill the new fulter with the dynamic values from the entity record
 	 */
 	private async filteredUrlFromDynamicValues(_filter: string): Promise<string> {
-		const arrayDynamicValues: any = this._filterDynamicValues.split(",");
+		const arrayDynamicValues: string[] = this._filterDynamicValues.split(",");
 		const result = await MultiselectModel.GetDataFromEntity(this._context, this._entityRecordName, this._entityRecordId, this._filterDynamicValues);
 		arrayDynamicValues.forEach((value: string, index: number) => {
 			index++;

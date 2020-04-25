@@ -2,9 +2,9 @@ import * as React from "react";
 
 import { Stack, IDetailsRowProps, IRenderFunction, CommandBarButton, PrimaryButton, IIconProps, TextField, DetailsList, DetailsListLayoutMode, Selection, SelectionMode, initializeIcons, Spinner, SpinnerSize } from 'office-ui-fabric-react/lib';
 import { textFieldStyles } from './MultiselectRecords.styles'
+import { IMultiselectProps } from './MultiselectRecords.types'
 const clearIcon: IIconProps = { iconName: 'Clear' };
 const acceptIcon: IIconProps = { iconName: 'Accept', styles: { root: { color: 'white' } } };
-
 
 export class MultiselectRecords extends React.Component<any> {
     private _selection: Selection;
@@ -14,8 +14,8 @@ export class MultiselectRecords extends React.Component<any> {
     private _selectedItems: any;
     private _selectedRecordsItems: []
     private _searchValue: string;
-    private _isError: boolean;
-    constructor(props: any) {
+    private _isError: number;
+    constructor(props: IMultiselectProps) {
         super(props);
         initializeIcons();
         this._allItems = this.props.records != -1 ? this.props.records : [];
@@ -28,32 +28,41 @@ export class MultiselectRecords extends React.Component<any> {
         this.state = {
             records: this.props.records != -1 ? this.props.records : []
         }
-        this._isError = this.props.records != -1 ? false : true;
+        // Error 0 = OK
+        // Error -1 = More than  50
+        // Error -2 = No results
+        this._isError = this.props.records === -1 ? -1 : this.props.records === -2 ? -2 : 0;
     }
 
     public componentDidUpdate(prevProps: any): void {
-
         if (this.props != prevProps) {
             this.setState((prevState: any): any => {
                 this._allItems = []
-                if (this.props.records !== -1) {
+                if (this.props.records !== -1 && this.props.records !== -2) {
+                    // Set all records as false
                     this._selection.setAllSelected(false);
+                    //Iterate through the array of selected items and push to the main list
                     this._selectedRecordsItems.forEach((item) => {
                         this._allItems.push(item)
                     })
+                    // Get records retrieved
                     const propsRecords: [] = this.props.records;
+                    // Check for each record that contains that value
                     propsRecords.forEach((item) => {
                         const index = this._allItems.findIndex(x => x[this.props.data] === item[this.props.data]);
                         if (index == -1) {
                             this._allItems.push(item)
                         }
                     })
-                    this._isError = false;
+                    // Set the error as false
+                    this._isError = 0;
+                    // Async set time out to select the index so the control can load completely
                     setTimeout(() => {
                         this.selectIndexFromNames();
                     }, 0)
                 } else {
-                    this._isError = true;
+                    // Assign the error coming from the WebApi to the error
+                    this._isError = this.props.records;
                 }
                 return prevState;
             });
@@ -109,6 +118,7 @@ export class MultiselectRecords extends React.Component<any> {
      */
     private _showSearchTextField(): JSX.Element {
         if (this.props.isControlVisible) {
+            const errorMessage = this._isError === 0 ? "" : this._isError === -1 ? "More than 50 records have been retrieved. Please, make it less or equals 50." : "There are no records to be shown";
             return (
                 <TextField className={"text"}
                     onChange={this.filterRecords}
@@ -117,7 +127,7 @@ export class MultiselectRecords extends React.Component<any> {
                     styles={{ root: { flex: 1, position: 'relative', marginTop: 10 } }}
                     disabled={this.props.isControlDisabled}
                     placeholder="Search..."
-                    errorMessage={this._isError ? "More than 50 records have been retrieved. Please, make it less or equals 50." : ""}
+                    errorMessage={errorMessage}
                 />
             );
         } else {
