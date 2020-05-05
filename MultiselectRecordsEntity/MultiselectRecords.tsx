@@ -15,6 +15,7 @@ export class MultiselectRecords extends React.Component<any> {
     private _selectedRecordsItems: []
     private _searchValue: string;
     private _isError: number;
+    private _hideList: boolean;
     constructor(props: IMultiselectProps) {
         super(props);
         initializeIcons();
@@ -36,8 +37,19 @@ export class MultiselectRecords extends React.Component<any> {
 
     public componentDidUpdate(prevProps: any): void {
         if (this.props != prevProps) {
+            if (this.props.inputValue === null || this.props.inputValue === "") {
+                if (this.props.inputValue !== this._textFieldValue) {
+                    this.clearItems();
+                    this._hideList = true;
+                } else {
+                    this._hideList = false;
+                }
+            } else {
+                this._hideList = false;
+            }
             this.setState((prevState: any): any => {
                 this._allItems = []
+                this._textFieldValue = this.props.inputValue;
                 if (this.props.records !== -1 && this.props.records !== -2) {
                     // Set all records as false
                     this._selection.setAllSelected(false);
@@ -142,7 +154,7 @@ export class MultiselectRecords extends React.Component<any> {
      */
     private _showDetailsList(): JSX.Element {
 
-        if (this._allItems.length > 0) {
+        if (this._allItems.length > 0 && this._hideList === false) {
 
             return (
                 <Stack>

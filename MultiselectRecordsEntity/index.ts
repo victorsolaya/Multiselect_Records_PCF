@@ -54,7 +54,6 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 	 */
 	public init(context: ComponentFramework.Context<IInputs>, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container: HTMLDivElement) {
 		// Add control initialization code
-		debugger
 		this._context = context;
 		this._container = container;
 		this._notifyOutputChanged = notifyOutputChanged;
@@ -88,10 +87,16 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 	public async updateView(context: ComponentFramework.Context<IInputs>): Promise<void> {
 		// Add code to update control view
 		//this.props.records = await MultiselectModel.GetDataFromMock();
+		if (this._context.parameters.field.raw != this._value) {
+			this._value = this._context.parameters.field.raw || "";
+			this._notifyOutputChanged();
+		} else {
+			this.props.isControlDisabled = context.mode.isControlDisabled;
+			this.props.isControlVisible = context.mode.isVisible;
+		}
 		this.props.inputValue = this._context.parameters.field.raw || "";
-		this.props.isControlDisabled = context.mode.isControlDisabled;
-		this.props.isControlVisible = context.mode.isVisible;
 		this.renderElement()
+
 	}
 
 	/**
