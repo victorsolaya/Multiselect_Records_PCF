@@ -30,6 +30,7 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 	private _entityRecordId: string;
 	private _entityRecordName: string;
 	private _filterDynamicValues: string;
+	private timeout: NodeJS.Timeout;
 	private props: any = {
 		records: [],
 		eventOnChangeValue: this.eventOnChangeValue.bind(this),
@@ -79,24 +80,26 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		this._isFake = false;
 	}
 
-
 	/**
 	 * Called when any value in the property bag has changed. This includes field values, data-sets, global values such as container height and width, offline status, control metadata values such as label, visible, etc.
 	 * @param context The entire property bag available to control via Context Object; It contains values as set up by the customizer mapped to names defined in the manifest, as well as utility functions
 	 */
-	public async updateView(context: ComponentFramework.Context<IInputs>): Promise<void> {
+	public updateView(context: ComponentFramework.Context<IInputs>): void {
 		// Add code to update control view
 		//this.props.records = await MultiselectModel.GetDataFromMock();
-		if (this._context.parameters.field.raw != this._value) {
-			this._value = this._context.parameters.field.raw || "";
-			this._notifyOutputChanged();
-		} else {
-			this.props.isControlDisabled = context.mode.isControlDisabled;
-			this.props.isControlVisible = context.mode.isVisible;
-		}
-		this.props.inputValue = this._context.parameters.field.raw || "";
-		this.renderElement()
-
+		clearTimeout(this.timeout);
+		// Make a new timeout set to go off in 1000ms (1 second)
+		this.timeout = setTimeout(() => {
+			if (this._context.parameters.field.raw != this._value) {
+				this._value = this._context.parameters.field.raw || "";
+				this._notifyOutputChanged();
+			} else {
+				this.props.isControlDisabled = context.mode.isControlDisabled;
+				this.props.isControlVisible = context.mode.isVisible;
+			}
+			this.props.inputValue = this._context.parameters.field.raw || "";
+			this.renderElement()
+		}, 1000);
 	}
 
 	/**
