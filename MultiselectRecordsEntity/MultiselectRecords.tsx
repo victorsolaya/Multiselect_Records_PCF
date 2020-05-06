@@ -45,7 +45,6 @@ export class MultiselectRecords extends React.Component<any> {
                     if (this.props.records !== -1 && this.props.records !== -2) {
                         // Set all records as false
                         this._selection.setAllSelected(false);
-                        this._selectedRecordsItems = this.props.selectedRecords;
                         this._selectedRecordsItems.forEach((item) => {
                             this._allItems.push(item)
                         })
