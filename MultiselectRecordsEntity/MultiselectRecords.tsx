@@ -15,7 +15,6 @@ export class MultiselectRecords extends React.Component<any> {
     private _selectedRecordsItems: []
     private _searchValue: string;
     private _isError: number;
-    private _hideList: boolean;
     constructor(props: IMultiselectProps) {
         super(props);
         initializeIcons();
@@ -37,44 +36,41 @@ export class MultiselectRecords extends React.Component<any> {
 
     public componentDidUpdate(prevProps: any): void {
         if (this.props != prevProps) {
-            if (this.props.inputValue === null || this.props.inputValue === "") {
-                if (this.props.inputValue !== this._textFieldValue) {
-                    this.clearItems();
-                    this._hideList = true;
-                } else {
-                    this._hideList = false;
-                }
-            } else {
-                this._hideList = false;
-            }
             this.setState((prevState: any): any => {
                 this._allItems = []
-                this._textFieldValue = this.props.inputValue;
-                if (this.props.records !== -1 && this.props.records !== -2) {
-                    // Set all records as false
-                    this._selection.setAllSelected(false);
-                    //Iterate through the array of selected items and push to the main list
-                    this._selectedRecordsItems.forEach((item) => {
-                        this._allItems.push(item)
-                    })
-                    // Get records retrieved
-                    const propsRecords: [] = this.props.records;
-                    // Check for each record that contains that value
-                    propsRecords.forEach((item) => {
-                        const index = this._allItems.findIndex(x => x[this.props.data] === item[this.props.data]);
-                        if (index == -1) {
-                            this._allItems.push(item)
-                        }
-                    })
-                    // Set the error as false
-                    this._isError = 0;
-                    // Async set time out to select the index so the control can load completely
-                    setTimeout(() => {
-                        this.selectIndexFromNames();
-                    }, 0)
+                if (this.props.inputValue === null) {
+                    this._textFieldValue = "";
+                    this.clearItems();
                 } else {
-                    // Assign the error coming from the WebApi to the error
-                    this._isError = this.props.records;
+                    if (this.props.records !== -1 && this.props.records !== -2) {
+                        // Set all records as false
+                        this._selection.setAllSelected(false);
+                        this._selectedRecordsItems = this.props.selectedRecords;
+                        this._selectedRecordsItems.forEach((item) => {
+                            this._allItems.push(item)
+                        })
+
+                        //Iterate through the array of selected items and push to the main list
+
+                        // Get records retrieved
+                        const propsRecords: [] = this.props.records;
+                        // Check for each record that contains that value
+                        propsRecords.forEach((item) => {
+                            const index = this._allItems.findIndex(x => x[this.props.data] === item[this.props.data]);
+                            if (index == -1) {
+                                this._allItems.push(item)
+                            }
+                        })
+                        // Set the error as false
+                        this._isError = 0;
+                        // Async set time out to select the index so the control can load completely
+                        setTimeout(() => {
+                            this.selectIndexFromNames();
+                        }, 0)
+                    } else {
+                        // Assign the error coming from the WebApi to the error
+                        this._isError = this.props.records;
+                    }
                 }
                 return prevState;
             });
@@ -154,7 +150,7 @@ export class MultiselectRecords extends React.Component<any> {
      */
     private _showDetailsList(): JSX.Element {
 
-        if (this._allItems.length > 0 && this._hideList === false) {
+        if (this._allItems.length > 0) {
 
             return (
                 <Stack>
@@ -299,7 +295,7 @@ export class MultiselectRecords extends React.Component<any> {
     private selectIndexFromNames = (): void => {
         var values = this._textFieldValue.split(this.props.delimiter);
         for (var item of values) {
-            var index = this._allItems.findIndex(x => x[this.props.data] == item);
+            var index = this._allItems.findIndex(x => x[this.props.data] == item.trim());
             if (index !== -1) {
                 this._selection.setIndexSelected(index, true, true);
             }
