@@ -22,6 +22,10 @@
       <value name="true" display-name-key="True" description-key="true">True</value>
       <value name="false" display-name-key="False" description-key="false">False</value>
     </property>
+    <property name="populatedFieldVisible" display-name-key="Populated Field Visible" description-key="Is the field that gets populated visible?" of-type="Enum" usage="input" required="true">
+      <value name="true" display-name-key="True" description-key="true">True</value>
+      <value name="false" display-name-key="False" description-key="false">False</value>
+    </property>
     
     <!-- 
       Property node's of-type attribute can be of-type-group attribute. 

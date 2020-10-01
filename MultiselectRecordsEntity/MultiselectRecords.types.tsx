@@ -19,5 +19,6 @@ export interface IMultiselectProps {
     dataToBeSet: string,
     headerVisible: boolean,
     isControlVisible: boolean,
-    isControlDisabled: boolean
+    isControlDisabled: boolean,
+    populatedFieldVisible: boolean
 }

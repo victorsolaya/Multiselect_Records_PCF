@@ -29,7 +29,8 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 	private _isFake: boolean;
 	private _entityRecordId: string;
 	private _entityRecordName: string;
-	private _filterDynamicValues: string;
+  private _filterDynamicValues: string;
+  private _populatedFieldVisible: "True" | "False";
 	private props: any = {
 		records: [],
 		eventOnChangeValue: this.eventOnChangeValue.bind(this),
@@ -42,7 +43,8 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		isControlDisabled: false,
 		isControlVisible: true,
 		isMultiple: true,
-		selectedRecords: []
+    selectedRecords: [],
+    populatedFieldVisible: true
 	}
 
 	/**
@@ -78,7 +80,10 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		this._entityRecordName = contextPage.entityTypeName;
 		const isMultiple = this._context.parameters.isMultiple.raw || "True";
 		this.props.isMultiple = isMultiple == "True" ? true : false;
-		this._isFake = false;
+    this._isFake = false;
+    
+    this._populatedFieldVisible = this._context.parameters.populatedFieldVisible.raw || "True";
+    this.props.populatedFieldVisible = this._populatedFieldVisible == "True" ? true : false;
 	}
 
 
