@@ -26,6 +26,7 @@ This can be useful to retrieve a "list of records" from a single field and it ca
 7. Header Visible -> Set if the header will be visible in the list displayed.
 8. Delimiter for the exposed data -> This will be the delimiter to split the data in your field (1)
 9. Is Multiple -> If true you can select all the records you want, if false, only one record can be selected. (True = Multiple | False = Single)
+10. Populated Field Visible -> Set if the field that gets populated will be visible.
 
 ## Filter section
 
