@@ -43,8 +43,8 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		isControlDisabled: false,
 		isControlVisible: true,
 		isMultiple: true,
-    selectedRecords: [],
-    populatedFieldVisible: true
+    	selectedRecords: [],
+    	populatedFieldVisible: true
 	}
 
 	/**
@@ -80,10 +80,10 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		this._entityRecordName = contextPage.entityTypeName;
 		const isMultiple = this._context.parameters.isMultiple.raw || "True";
 		this.props.isMultiple = isMultiple == "True" ? true : false;
-    this._isFake = false;
+    	this._isFake = false;
     
-    this._populatedFieldVisible = this._context.parameters.populatedFieldVisible.raw || "True";
-    this.props.populatedFieldVisible = this._populatedFieldVisible == "True" ? true : false;
+    	this._populatedFieldVisible = this._context.parameters.populatedFieldVisible.raw || "True";
+    	this.props.populatedFieldVisible = this._populatedFieldVisible == "True" ? true : false;
 	}
 
 

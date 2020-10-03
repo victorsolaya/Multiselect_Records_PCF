@@ -47,6 +47,11 @@ The Field Filter Values is a Xrm.Webapi call to the record as we have the entity
 
       THESE ARE OPTIONAL, THEY ARE REPRESENTED BY {1}, {2}, THERE IS NO LIMIT, BUT WILL ALWAYS BE REFERENCE TO THE ENTITY YOU ARE RIGHT NOW
 
+#### Notes
+
+Just for your knowledge, the $filter=contains WILL NOT work in the offline mode, this is based on a limitation not written in the API.
+There is already an issue open with Microsoft about this. [https://github.com/MicrosoftDocs/dynamics-365-customer-engagement/issues/1916](https://github.com/MicrosoftDocs/dynamics-365-customer-engagement/issues/1916)
+
 ### Example
 
 This control is set in the account entity.
@@ -72,7 +77,6 @@ This will filter our contacts with the account we are right now and its country 
 
 ![Example](assets/example.png)
 ![Example 2](assets/example-2.png)
-![Example 3](assets/example-3.png)
 
 ![Example Demo](assets/example-demo.gif)
 
@@ -80,7 +84,13 @@ This will filter our contacts with the account we are right now and its country 
 
 ![Form configuration guid](assets/configuration-guid.png)
 
-![Example guid](assets/example-demo-2.gif)
+![Example guid](assets/example-demo-2.png)
+
+## Example demo with Guid and field not showing (set in config)
+
+![Form configuration](assets/configuration-guid-2.png)
+
+![Example guid](assets/example-demo-3.gif)
 
 ## Example error when returned records are more than 50.
 
