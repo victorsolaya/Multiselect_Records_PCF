@@ -111,6 +111,7 @@ export class MultiselectRecords extends React.Component<any> {
                     styles={textFieldStyles}
                     disabled={this.props.isControlDisabled}
                     placeholder="---"
+                    style={{ display: this.props.populatedFieldVisible ? "block" : "none" }}
                 />
             );
         } else {
