@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <manifest>
-  <control namespace="VictorSanchez" constructor="MultiselectRecordsEntity" version="0.0.9" display-name-key="Multiselect Records Entity" description-key="Multiple selector for several records and insert in a string" control-type="standard">
+  <control namespace="VictorSanchez" constructor="MultiselectRecordsEntity" version="0.0.10" display-name-key="Multiselect Records Entity" description-key="Multiple selector for several records and insert in a string" control-type="standard">
     <!-- property node identifies a specific, configurable piece of data that the control expects from CDS -->
      <type-group name="textareas">
         <type>SingleLine.Text</type>
