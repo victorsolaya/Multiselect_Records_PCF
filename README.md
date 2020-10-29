@@ -52,7 +52,18 @@ The Field Filter Values is a Xrm.Webapi call to the record as we have the entity
 Just for your knowledge, the $filter=contains WILL NOT work in the offline mode, this is based on a limitation not written in the API.
 There is already an issue open with Microsoft about this. [https://github.com/MicrosoftDocs/dynamics-365-customer-engagement/issues/1916](https://github.com/MicrosoftDocs/dynamics-365-customer-engagement/issues/1916)
 
-### Example
+### Basic example with no parameters
+
+This control is set in the account entity.
+We have a control in a single text field that is retrieving contacts.
+We want to retrieve the contacts which full name contains our input
+
+For that we will put the following parameters:
+- Filter -> ?$filter=contains(fullname, '{0}')
+
+This will be filtered with the value of the searchbox.
+
+### Example with one parameter
 
 This control is set in the account entity.
 We have a control in a single text field that is retrieving contacts.
@@ -63,7 +74,8 @@ For that we will put the following parameters:
 - Field Filter Values -> accountid
 
 This will filter our contacts with the account we are right now and it will be filtered more when we search in our box.
-
+The Field Filter Values is triggering a Xrm.WebApi.retrieveRecord with the values of the entity the control is set, and the select will be the Field Filter Values.
+- In the example above it will be doing a Xrm.WebApi.retrieveRecord("entityname","entityguid", "?$select=accountid"), this output will be set in the {1}
 ### Example with two parameters
 
 - Filter -> ?$filter=contains(fullname, '{0}') and _parentcustomerid_value eq {1} and contactcountry eq {2}
