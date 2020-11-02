@@ -1,96 +1,134 @@
 import * as React from "react";
 
-import { Stack, IDetailsRowProps, IRenderFunction, CommandBarButton, PrimaryButton, IIconProps, TextField, DetailsList, DetailsListLayoutMode, Selection, SelectionMode, initializeIcons, Spinner, SpinnerSize } from 'office-ui-fabric-react/lib';
+import { Stack, IDetailsRowProps, IRenderFunction, CommandBarButton, PrimaryButton, IIconProps, TextField, DetailsList, DetailsListLayoutMode, Selection, SelectionMode, initializeIcons, Spinner, SpinnerSize, IconButton } from 'office-ui-fabric-react/lib';
 import { textFieldStyles } from './MultiselectRecords.styles'
 import { IMultiselectProps } from './MultiselectRecords.types'
+import { useEffect, useState } from "react";
 const clearIcon: IIconProps = { iconName: 'Clear' };
 const acceptIcon: IIconProps = { iconName: 'Accept', styles: { root: { color: 'white' } } };
 
-export class MultiselectRecords extends React.Component<any> {
-    private _selection: Selection;
-    private _allItems: [];
-    private _columns: any;
-    private _textFieldValue: string;
-    private _selectedItems: any;
-    private _selectedRecordsItems: []
-    private _searchValue: string;
-    private _isError: number;
-    constructor(props: IMultiselectProps) {
-        super(props);
-        initializeIcons();
-        this._allItems = this.props.records != -1 ? this.props.records : [];
-        this._columns = this.props.columns;
-        this._textFieldValue = this.props.inputValue || "";
-        this._searchValue = "";
-        this._selectedItems = [];
-        this._selectedRecordsItems = [];
-        this._selection = new Selection();
-        this.state = {
-            records: this.props.records != -1 ? this.props.records : []
+const MultiselectRecords = (props: IMultiselectProps) => {
+    initializeIcons();
+    // STATE
+    const [showList, setShowList] = useState(false);
+    const [listItems, setListItems] = useState(props.records);
+    const [textFieldValue, setTextFieldValue] = useState(props.inputValue || "");
+    const [searchValue, setSearchValue] = useState("");
+    const [selectedRecordItems, setSelectedRecordItems] = useState([])
+    const [selectedItems, setSelectedItems] = useState([])
+
+    const [selection, setSelection] = useState(new Selection());
+    const [myItems, setMyItems] = useState([]);
+    const [records, setRecords] = useState(props.records !== -1 ? props.records : []);
+    const [isError, setIsError] = useState(0)
+    const [errorMessage, setErrorMessage] = useState("")
+    
+    // EFFECT
+    useEffect(() => {
+        setItemsFromTextFieldValue();
+        selectRecordItemsAndPushThem();
+    }, [textFieldValue]);
+    useEffect(() => {
+        setItemsFromRecordsIfNull();
+    }, [showList, myItems]);
+    useEffect(() => {
+        async function DoOnLoad() {
+            const recordsRetrieved: any = await getRecordsFromTextField();
+            setSelectedItems(recordsRetrieved.entities);
         }
-        // Error 0 = OK
-        // Error -1 = More than  50
-        // Error -2 = No results
-        this._isError = this.props.records === -1 ? -1 : this.props.records === -2 ? -2 : 0;
-    }
+        DoOnLoad();
+    },[])
 
-    public componentDidUpdate(prevProps: any): void {
-        if (this.props != prevProps) {
-            this.setState((prevState: any): any => {
-                this._allItems = []
-                if (this.props.inputValue === null) {
-                    this._textFieldValue = "";
-                    this.clearItems();
-                } else {
-                    if (this.props.records !== -1 && this.props.records !== -2) {
-                        // Set all records as false
-                        this._selection.setAllSelected(false);
-                        this._selectedRecordsItems.forEach((item) => {
-                            this._allItems.push(item)
-                        })
+    useEffect(() => {
+        const errorMessageText = isError === 0 ? "" : isError === -1 ? `More than ${props.numberIfRecordsToBeShown} records have been retrieved. Please, make it less or equals ${props.numberIfRecordsToBeShown}.` : "There are no records to be shown";
+        setErrorMessage(errorMessageText);
+    }, [isError])
 
-                        //Iterate through the array of selected items and push to the main list
+    // FUNCTIONS
+const getRecordsFromTextField = async () => {
+    let filter = `$filter=`;
+        const fieldValueArray = getTextFieldJSON();
+        for(let fieldValue of fieldValueArray) {
+            if(fieldValue != null) {
+                filter += `${props.attributeid} eq ${JSON.parse(fieldValue)["id"]} or `
+            }
+        }
+        filter = filter.substring(0, filter.length - 4);
+        const addFilter = filter == "$filter=" ? "" : `&${filter}`;
+        const recordsRetrieved: any = await Xrm.WebApi.retrieveMultipleRecords(props.logicalName, `?$select=${props.attributeid},${props.data}${addFilter}`)
+        return recordsRetrieved;
+}
 
-                        // Get records retrieved
-                        const propsRecords: [] = this.props.records;
-                        // Check for each record that contains that value
-                        propsRecords.forEach((item) => {
-                            const index = this._allItems.findIndex(x => x[this.props.data] === item[this.props.data]);
-                            if (index == -1) {
-                                this._allItems.push(item)
-                            }
-                        })
-                        // Set the error as false
-                        this._isError = 0;
-                        // Async set time out to select the index so the control can load completely
-                        setTimeout(() => {
-                            this.selectIndexFromNames();
-                        }, 0)
-                    } else {
-                        // Assign the error coming from the WebApi to the error
-                        this._isError = this.props.records;
-                    }
+    const setSelectedItemsWhenOpened = async(recordsPassedParam: any) => {
+        const recordsRetrieved: any = await getRecordsFromTextField();
+        const recordsPassedParamCopy = recordsPassedParam.slice();
+        
+        if(recordsRetrieved.entities.length != 0 ) {
+            const selectedItemsWhenOpened: any = recordsRetrieved.entities;
+            for (var item of selectedItemsWhenOpened) {
+                var itemFiltered = recordsPassedParamCopy.filter((x: any) => x[props.attributeid] == item[props.attributeid]);
+                var index = recordsPassedParamCopy.findIndex((x: any) => x[props.attributeid] == item[props.attributeid]);
+                if(index != -1) {
+                    recordsPassedParamCopy.splice(index, 1);
+                    recordsPassedParamCopy.unshift(itemFiltered[0]);
                 }
-                return prevState;
-            });
+            }
+            //setSelectedItems(selectedItemsWhenOpened);
+            setListItems(recordsPassedParamCopy);
+            selection.setItems(recordsPassedParamCopy);
+            let selectedItemsConcat:any = selectedItemsWhenOpened.concat(selectedItems);
+            selectedItemsConcat = selectedItemsConcat.filter((a: any, b: any) => selectedItemsConcat.indexOf(a) === b)
+
+            for(let item of selectedItemsConcat) {
+                const indexItem = recordsPassedParamCopy.findIndex((x:any) => item[props.attributeid] == x[props.attributeid])
+                if(indexItem != -1) {
+                    selection.setIndexSelected(parseInt(indexItem), true, true);
+                }
+            }
         }
     }
 
-    /**
-     * When component mounts to select the indexes.
-     */
-    public componentDidMount(): void {
-        if (this._textFieldValue != "") {
-            setTimeout(() => {
-                this.selectIndexFromNames();
-            }, 0)
+    const setItemsFromRecordsIfNull = () => {
+        if(listItems.length == 0) {
+            setListItems(records);
         }
+        
     }
+    const setItemsFromTextFieldValue = () => {
+        let valuesInTheTextField: any = []
+        if(textFieldValue != null && textFieldValue != "" && textFieldValue != "[]") {
+            let textFieldTemp = JSON.parse(textFieldValue);
+            for(var item of textFieldTemp) {
+                valuesInTheTextField.push(JSON.stringify(item));
+            }
+        }
+        setMyItems(valuesInTheTextField);
+    }
+
+    const selectRecordItemsAndPushThem = () => {
+        selection.setAllSelected(false);
+        let itemsSelected: any = []
+        if(selectedRecordItems != null && selectedRecordItems.length > 0) {
+            for(var selectedRecordItem of selectedRecordItems) {
+                itemsSelected.push(selectedRecordItem);
+            }
+        } else {
+            if(textFieldValue != "" && textFieldValue != "[]") {
+                let textFieldTemp = JSON.parse(textFieldValue);
+                for(var item of textFieldTemp) {
+                    itemsSelected.push(JSON.stringify(item));
+                }
+                setMyItems(itemsSelected)
+            }
+        }
+        selectIndexFromNames()
+    }
+
 
     /**
      * Method to select item when you click on the row
      */
-    private onRenderRow(props: IDetailsRowProps, defaultRender?: IRenderFunction<IDetailsRowProps>): JSX.Element {
+    const onRenderRow = (props: IDetailsRowProps, defaultRender?: IRenderFunction<IDetailsRowProps>): JSX.Element => {
         return (
             <div data-selection-toggle="true">
                 {defaultRender && defaultRender(props)}
@@ -98,20 +136,37 @@ export class MultiselectRecords extends React.Component<any> {
         );
     };
 
+    const onClickRow = async (item: any, index: number, event: React.FocusEvent<HTMLElement>) => {
+        const row = event.target;
+
+        let selectedItemsCopy: any = selectedItems;
+        if(row.classList.contains("is-selected")) {
+            row.classList.remove("is-selected");
+
+            selectedItemsCopy = selectedItems.filter( (x:any) => x[props.attributeid] != item[props.attributeid])
+        } else {
+            row.classList.add("is-selected");
+            selectedItemsCopy = selectedItems;
+            selectedItemsCopy.push(item)
+        }
+        //Remove duplicates
+        selectedItemsCopy = selectedItemsCopy.filter((a: any, b: any) => selectedItemsCopy.indexOf(a) === b)
+        setSelectedItems(selectedItemsCopy);
+    }
+
     /**
      * Renders the main text
      */
-    private _showMainTextField(): JSX.Element {
-        if (this.props.isControlVisible) {
+    const _showMainTextField = (): JSX.Element => {
+        if (props.isControlVisible) {
             return (
                 <TextField className={"text"}
-                    onChange={this.userInputOnChange}
+                    onChange={userInputOnChange}
                     autoComplete="off"
-                    value={this._textFieldValue}
+                    value={textFieldValue}
                     styles={textFieldStyles}
-                    disabled={this.props.isControlDisabled}
+                    disabled={props.isControlDisabled}
                     placeholder="---"
-                    style={{ display: this.props.populatedFieldVisible ? "block" : "none" }}
                 />
             );
         } else {
@@ -122,18 +177,45 @@ export class MultiselectRecords extends React.Component<any> {
     }
 
     /**
+     * Renders the main text
+     */
+    const _showSecondaryTextField =(): JSX.Element => {
+        if (props.isControlVisible) {
+            if(textFieldValue != ""  && textFieldValue != "[]") {
+                return (
+                    <Stack gap="5" horizontal wrap maxWidth={props.widthProp}>
+                        {myItems != null && myItems.length > 0 && myItems.map( (item: any ) => {
+                            const theItem = JSON.parse(item);
+                            return (
+                                <Stack horizontal style={{border:"1px solid #106EBE"}}>
+                                    <PrimaryButton className="buttonContainer" style={{borderRadius: 0}} key={theItem.id} data-id={theItem.id} text={theItem.name} onClick={triggerItemClick} />
+                                    <IconButton primary iconProps={clearIcon} title="Clear" ariaLabel="Clear" onClick={removeFieldValue}/>
+                                </Stack>
+                            )
+                        })}
+                    </Stack>
+                );
+        }
+    }
+        return (
+            <></>
+        );
+        
+    }
+
+    /**
      * Renders the search box
      */
-    private _showSearchTextField(): JSX.Element {
-        if (this.props.isControlVisible) {
-            const errorMessage = this._isError === 0 ? "" : this._isError === -1 ? "More than 50 records have been retrieved. Please, make it less or equals 50." : "There are no records to be shown";
+    const _showSearchTextField = (): JSX.Element => {
+        if (props.isControlVisible) {
             return (
                 <TextField className={"text"}
-                    onChange={this.filterRecords}
+                    onChange={filterRecords}
+                    width={props.widthProp}
                     autoComplete="off"
-                    value={this._searchValue}
+                    value={searchValue}
                     styles={{ root: { flex: 1, position: 'relative', marginTop: 10 } }}
-                    disabled={this.props.isControlDisabled}
+                    disabled={props.isControlDisabled}
                     placeholder="Search..."
                     errorMessage={errorMessage}
                 />
@@ -148,17 +230,16 @@ export class MultiselectRecords extends React.Component<any> {
     /**
      * Renders the list and the buttons
      */
-    private _showDetailsList(): JSX.Element {
+    const _showDetailsList = (): JSX.Element => {
 
-        if (this._allItems.length > 0) {
+        if (listItems.length > 0 && showList == true) {
 
             return (
                 <Stack>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1, alignContent: 'space-between' }}>
-                        <CommandBarButton iconProps={acceptIcon} text="Select Elements" onClick={this.setFieldValue} styles={{
+                    <div style={{display: 'flex', justifyContent: 'space-between', flex: 1, alignContent: 'space-between' }}>
+                        <CommandBarButton iconProps={acceptIcon} text="Select Elements" onClick={setFieldValue} styles={{
                             root: {
                                 flex: 1,
-                                width: 200,
                                 padding: 10,
                                 zIndex: 1995,
                                 backgroundColor: '#0078D4',
@@ -167,10 +248,9 @@ export class MultiselectRecords extends React.Component<any> {
                             }
                         }} />
 
-                        <CommandBarButton iconProps={clearIcon} text="Close" onClick={this.clearItems} styles={{
+                        <CommandBarButton iconProps={clearIcon} text="Close" onClick={clearItems} styles={{
                             root: {
                                 flex: 1,
-                                width: 200,
                                 padding: 10,
                                 zIndex: 1995,
                                 backgroundColor: 'lightgrey',
@@ -180,20 +260,21 @@ export class MultiselectRecords extends React.Component<any> {
 
                     </div>
                     <DetailsList
-                        isHeaderVisible={this.props.headerVisible}
-                        items={this._allItems}
-                        columns={this._columns}
+                        isHeaderVisible={props.headerVisible}
+                        items={listItems}
+                        columns={props.columns}
                         setKey="set"
-                        selection={this._selection}
-                        selectionMode={this.props.isMultiple ? SelectionMode.multiple : SelectionMode.single}
+                        selection={selection}
                         layoutMode={DetailsListLayoutMode.justified}
                         selectionPreservedOnEmptyClick={true}
                         ariaLabelForSelectionColumn="Toggle selection"
                         checkButtonAriaLabel="Checkbox"
-                        onRenderRow={this.onRenderRow}
-
+                        onRenderRow={onRenderRow}
+                        onActiveItemChanged={onClickRow}
+                        
                         styles={{
                             root: {
+                                width: props.width,
                                 flex: 1,
                                 position: 'absolute',
                                 zIndex: 1995,
@@ -209,107 +290,240 @@ export class MultiselectRecords extends React.Component<any> {
         }
     }
 
-    /**
-     * Main method to render
-     */
-    public render(): JSX.Element {
-        /**
-         * If _allItems is more than 0 then we will create the list.
-         * _allItems will populate once it request from fetch
-         */
-
-        return (
-            <div className={"divContainer"}>
-                <div className={"control"} >
-                    <Stack style={{ flexDirection: 'row' }}>
-                        {this._showMainTextField()}
-
-                    </Stack>
-                    <Stack style={{ flexDirection: 'row' }}>
-                        {this._showSearchTextField()}
-
-                    </Stack>
-                    {this._showDetailsList()}
-
-                </div>
-            </div>
-        );
+    const triggerItemClick = (a:any):void => {
+        const dataid = a.currentTarget.getAttribute("data-id")
+        openRecord(props.logicalName, dataid); 
     }
+
+    const openRecord =(logicalName: string, id: string): void => {
+        const version = Xrm.Utility.getGlobalContext()
+          .getVersion()
+          .split(".");
+        const mobile = Xrm.Utility.getGlobalContext().client.getClient() == "Mobile";
+        // MFD (main form dialog) is available past ["9", "1", "0000", "15631"]
+        // But doesn't work on mobile client
+        if (
+          !mobile &&
+          version.length == 4 &&
+          Number.parseFloat(version[0] + "." + version[1]) >= 9.1 &&
+          Number.parseFloat(version[2] + "." + version[3]) >= 0.15631
+        ) {
+            
+           if(props.openWindow.toLowerCase() == "in a new window") {
+            (Xrm.Navigation as any).openForm({
+                    entityName: logicalName,
+                    entityId: id,
+                    openInNewWindow: true
+                  });
+            }else if(props.openWindow.toLowerCase() == "in the same window") {
+                (Xrm.Navigation as any).openForm({
+                    entityName: logicalName,
+                    entityId: id,
+                    openInNewWindow: false
+                  });
+            } else {
+                (Xrm.Navigation as any).navigateTo(
+                    {
+                    entityName: logicalName,
+                    pageType: "entityrecord",
+                    formType: 2,
+                    entityId: id,
+                    },
+                    { target: 2, position: 1, width: { value: 80, unit: "%" } },
+                );
+            }
+        } else {
+          Xrm.Navigation.openForm({
+            entityName: logicalName,
+            entityId: id,
+          });
+        }
+    } 
 
     /**
      * When the main field is changed
      */
-    private userInputOnChange = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
+    const userInputOnChange = (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
         // Get the target
         const target = event.target as HTMLTextAreaElement;
         //Set the value of our textfield to the input
-        this._textFieldValue = target.value;
+        setTextFieldValue(target.value)
         //This is needed for loading the textFieldValue
-        this.setState((prevState: any): any => prevState);
-        this.props.eventOnChangeValue(this._textFieldValue);
+        props.eventOnChangeValue(textFieldValue);
     }
 
     /**
      * Main trigger when the searchbox is changed
      */
-    private filterRecords = async (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>): Promise<any> => {
+    const filterRecords = async (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>): Promise<any> => {
         // Get the target
         const target = event.target as HTMLTextAreaElement;
         //Set the value of our textfield to the input
-        this._searchValue = target.value;
-        //This is needed for loading the textFieldValue
-        this.setState((prevState: any): any => prevState);
+        setSearchValue(target.value);
         // Send filter outside
-        this.props.triggerFilter(this._searchValue)
+        const recordsRetrieved: any = await props.triggerFilter(target.value);
+        const myItemsFromTextField = getTextFieldJSON()
+        if(props.filterTags == true) {
+            if(myItemsFromTextField.length > 0 && target.value != "" && target.value != null && recordsRetrieved != -1 && recordsRetrieved != -2) {
+                const intersection = myItemsFromTextField.filter((x:any) => recordsRetrieved.some((y:any) => y[props.attributeid] === JSON.parse(x).id))
+                setMyItems(intersection);
+            } else if(target.value == "" || target.value == null) {
+                setMyItems(myItemsFromTextField);
+            }
+        }
+        
+        if(recordsRetrieved != -1 && recordsRetrieved != -2) {
+            setIsError(0)
+            // setListItems(recordsRetrieved);
+            // selection.setItems(recordsRetrieved)
+            
+            setRecords(recordsRetrieved);
+            setSelectedItemsWhenOpened(recordsRetrieved);
+            if(showList == false) {
+                setShowList(true)
+            }
+            
+        } else {
+            setListItems([]);
+            selection.setItems([])
+            setShowList(false)
+            const numberOfError = recordsRetrieved
+            setIsError(numberOfError);
+        }
     };
 
     /**
      * Event when the select elements is clicked
      */
-    private setFieldValue = (): void => {
-        this.fillSelectedItems();
-        const valueToBeAssigned: string = this._selectedItems.join(this.props.delimiter);
+    const setFieldValue = (): void => {
+        const valueToBeAssigned: any = fillSelectedItems()[0];
+        setMyItems(valueToBeAssigned);
+        setTextFieldValue("[" + valueToBeAssigned.toString() + "]")
+        props.eventOnChangeValue("[" + valueToBeAssigned.toString() + "]") ;
+    }
 
-        this._textFieldValue = valueToBeAssigned;
-        this.props.eventOnChangeValue(valueToBeAssigned);
+    const getTextFieldJSON = () => {
+        let myItemsCopy: any = [];
+        if(textFieldValue != "" && textFieldValue != "[]") {
+            let textFieldTemp = JSON.parse(textFieldValue);
+            for(var item of textFieldTemp) {
+                myItemsCopy.push(JSON.stringify(item));
+            }
+        }
+        return myItemsCopy
+    }
+
+    /**
+     * Click on the remove button next to the tag
+     */
+    const removeFieldValue = (event: any): void => {
+        const selectedRecordItemsCopy = fillSelectedItems()[1];
+        const id = event.currentTarget.parentElement.getElementsByClassName('buttonContainer')[0].getAttribute("data-id");
+        const filterItemsWithoutTheRemovedOne: any = selectedRecordItemsCopy.filter( (myItem: any) => myItem[props.attributeid] != id).map((x: any) => x);
+        const filterSelectedItemsWithoutTheRemovedOne: any = selectedItems.filter( (myItem: any) => myItem[props.attributeid] != id).map((x: any) => x);
+
+        setSelectedRecordItems(filterItemsWithoutTheRemovedOne)
+        setSelectedItems(filterSelectedItemsWithoutTheRemovedOne)
+        setSearchValue("")
+        const filteredText = JSON.parse(textFieldValue).filter( (myItem: any) => myItem["id"] != id).map((x: any) => x)
+        const filteredTextString = filteredText.map((x:any) => JSON.stringify(x));
+        const text: any = JSON.stringify(filteredText);
+        setTextFieldValue(text)
+        setMyItems(filteredTextString);
+        setShowList(false)
+        props.triggerFilter("")
+        props.eventOnChangeValue(text);
     }
 
     /**
      * Method to fill the selected items from the box
      */
-    private fillSelectedItems = (): void => {
-        const listSelection: any = this._selection.getSelection();
+    const fillSelectedItems = (): any => {
+        const listSelection: any = selectedItems;
         const listArray: any = Array.isArray(listSelection) ? listSelection : [listSelection];
         const arrayItems: [] = listArray;
-        this._selectedItems = [];
-        this._selectedRecordsItems = []
+        setSelectedRecordItems([])
+        let selectedRecordItemsCopy: any = [];
+        let selectedItemsCopy: any = [];
+
         for (let item of arrayItems) {
-            this._selectedRecordsItems.push(item);
-            this._selectedItems.push(item[this.props.data]);
+            
+            selectedRecordItemsCopy.push(item);
+            let json = { "id": item[props.attributeid], "name": item[props.data]}
+            
+            selectedItemsCopy.push(JSON.stringify(json));
         }
+        setSelectedRecordItems(selectedRecordItemsCopy);
+        return [selectedItemsCopy, selectedRecordItemsCopy];
     }
 
     /**
      * Selects the rows
      */
-    private selectIndexFromNames = (): void => {
-        var values = this._textFieldValue.split(this.props.delimiter);
-        for (var item of values) {
-            var index = this._allItems.findIndex(x => x[this.props.data] == item.trim());
-            if (index !== -1) {
-                this._selection.setIndexSelected(index, true, true);
+    const selectIndexFromNames = (recordsProp: any = null): void => {
+
+        var values = JSON.parse(textFieldValue)
+        const arrayAllItems = recordsProp != null ? recordsProp : listItems != null && listItems.length > 0 ? listItems : recordsProp;
+        if(arrayAllItems != null && arrayAllItems.length > 0) {
+
+            for (var item of values.reverse()) {
+                var itemFiltered = arrayAllItems.filter((x: any) => x[props.attributeid] == item["id"]);
+                var index = arrayAllItems.findIndex((x: any) => x[props.attributeid] == item["id"]);
+                if(index != -1) {
+                    arrayAllItems.splice(index, 1);
+                    arrayAllItems.unshift(itemFiltered[0]);
+                }
             }
+            
+            const copy = arrayAllItems.slice();
+            selection.setItems([],true);
+            setListItems(copy.slice());
+            selection.setItems(copy.slice(),true);
+
+            for(let item of selectedItems) {
+                const indexItem = copy.findIndex((x:any) => item[props.attributeid] == x[props.attributeid])
+                if(indexItem != -1) {
+                    selection.setIndexSelected(parseInt(indexItem), true, true);
+                }
+            }
+           
+            
         }
-        this.fillSelectedItems();
     }
 
     /**
      * When close button is triggered
      */
-    private clearItems = (): void => {
-        this._allItems = [];
-        this._searchValue = "";
-        this.setState((prevState: any): any => prevState);
+    const clearItems = (): void => {
+        setSearchValue("")
+        setListItems([])
+        const copyItems = getTextFieldJSON();
+        setMyItems(copyItems);
+        setShowList(false)
+        props.triggerFilter("")
     }
 
+     /**
+         * If _allItems is more than 0 then we will create the list.
+         * _allItems will populate once it request from fetch
+         */
+        return (
+            <div className={"divContainer"}>
+                <div className={"control"} >
+                    {props.populatedFieldVisible == true ? <Stack horizontal>
+                        {_showMainTextField()}
+                    </Stack> : <></>}
+                    <Stack horizontal>
+                        {_showSecondaryTextField()}
+                    </Stack>
+                    <Stack horizontal>
+                        {_showSearchTextField()}
+                    </Stack>
+                    {_showDetailsList()}
+
+                </div>
+            </div>
+        );
 }
+
+export default MultiselectRecords;

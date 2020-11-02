@@ -1,10 +1,12 @@
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { MultiselectRecords } from './MultiselectRecords'
+import MultiselectRecords  from './MultiselectRecords'
 import { MultiselectModel } from './Model/MultiselectRetrieveData';
 import { Utilities } from './Utilities/Utilities';
 export class MultiselectRecordsEntity implements ComponentFramework.StandardControl<IInputs, IOutputs> {
+	private _filterTags: string;
+	private _numberOfRecordsToBeShown: number;
 
 	/**
 	 * Empty constructor.
@@ -39,12 +41,15 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		columns: "",
 		headerVisible: false,
 		data: "",
-		delimiter: "",
+		attributeid: "",
 		isControlDisabled: false,
 		isControlVisible: true,
-		isMultiple: true,
-    	selectedRecords: [],
-    	populatedFieldVisible: true
+		selectedRecords: [],
+		populatedFieldVisible: true,
+		logicalName: "",
+		openWindow: "",
+		widthProp: 200,
+		filterTags: true
 	}
 
 	/**
@@ -57,7 +62,7 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 	 */
 	public init(context: ComponentFramework.Context<IInputs>, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container: HTMLDivElement) {
 		// Add control initialization code
-		debugger
+
 		this._context = context;
 		this._container = container;
 		this._notifyOutputChanged = notifyOutputChanged;
@@ -72,18 +77,25 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		this.props.headerVisible = this._headerVisible == "True" ? true : false;
 		const columns: string = this._context.parameters.columns.raw?.trim() || "Name,name";
 		this.props.columns = Utilities.parseColumns(columns);
-		this.props.delimiter = this._context.parameters.delimiterForData.raw || ";";
 		this.props.data = this._context.parameters.data.raw || "name";
+		this.props.attributeid = this._context.parameters.attributeid.raw || "accountid";
 		this._filterDynamicValues = this._context.parameters.filterDynamicValues.raw || "";
 		const contextPage = (context as any).page;
 		this._entityRecordId = contextPage.entityId;
 		this._entityRecordName = contextPage.entityTypeName;
-		const isMultiple = this._context.parameters.isMultiple.raw || "True";
-		this.props.isMultiple = isMultiple == "True" ? true : false;
-    	this._isFake = false;
-    
-    	this._populatedFieldVisible = this._context.parameters.populatedFieldVisible.raw || "True";
-    	this.props.populatedFieldVisible = this._populatedFieldVisible == "True" ? true : false;
+
+		this._isFake = false;
+	
+		this._populatedFieldVisible = this._context.parameters.populatedFieldVisible.raw || "False";
+		this.props.populatedFieldVisible = this._populatedFieldVisible == "True" ? true : false;
+
+		this.props.logicalName = this._entityName;
+		this.props.openWindow = this._context.parameters.openFormOptions.raw || "Pop up";
+		this._filterTags = this._context.parameters.filterTags.raw || "True";
+		this.props.filterTags = this._filterTags == "True" ? true : false;
+		this._numberOfRecordsToBeShown = this._context.parameters.recordsToBeReturned.raw || 50;
+		this.props.numberIfRecordsToBeShown = this._numberOfRecordsToBeShown;
+		context.mode.trackContainerResize(true);
 	}
 
 
@@ -97,28 +109,28 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		this.props.inputValue = this._context.parameters.field.raw || null;
 		this.props.isControlDisabled = context.mode.isControlDisabled;
 		this.props.isControlVisible = context.mode.isVisible;
-
+		this.props.widthProp = context.mode.allocatedWidth;
 		this.renderElement()
 	}
 
 	/**
 	 * Retrieves the records when the filter has triggered
 	 */
-	private async retrieveRecordsFromFetch(): Promise<any> {
+	private async retrieveRecordsFromFetch(input: string): Promise<any> {
 		if (this._isFake == false) {
 			if (this._isFetchXml == true) {
-				this._records = await MultiselectModel.GetDataFromApiWithFetchXml(this._context, this._entityName, this._filter);
+				this._records = await MultiselectModel.GetDataFromApiWithFetchXml(this._context, this._entityName, this._filter, this._numberOfRecordsToBeShown);
 			} else {
-				this._records = await MultiselectModel.GetDataFromApi(this._context, this._entityName, this._filter);
+				this._records = await MultiselectModel.GetDataFromApi(this._context, this._entityName, this._filter, this._numberOfRecordsToBeShown);
 			}
 		} else {
-			this._records = await MultiselectModel.GetDataFromMock();
+			this._records = await MultiselectModel.GetDataFromMock(input);
 		}
 		this.props.records = this._records;
 		if (this.props.inputValue === null) {
 			this.props.inputValue = "";
 		}
-		this.renderElement();
+		return this.props.records
 	}
 
 	/**
@@ -141,7 +153,8 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 				this._filter = await this.filteredUrlFromDynamicValues(this._filter);
 			}
 		}
-		this.retrieveRecordsFromFetch();
+		var records = await this.retrieveRecordsFromFetch(newInput);
+		return records;
 	}
 
 	/**

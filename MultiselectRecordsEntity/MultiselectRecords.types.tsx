@@ -8,6 +8,12 @@ export interface IColumnObject {
 }
 
 export interface IMultiselectProps {
+    openWindow: any;
+    width: string | number | undefined;
+    eventOnChangeValue(textFieldValue: string): void;
+    triggerFilter(searchValue: string) : void;
+    attributeid: any;
+    data: any;
     requestUrl: string,
     authorizationToken: string,
     userInput?: string;
@@ -20,5 +26,10 @@ export interface IMultiselectProps {
     headerVisible: boolean,
     isControlVisible: boolean,
     isControlDisabled: boolean,
-    populatedFieldVisible: boolean
+    populatedFieldVisible: boolean,
+    records: any,
+    logicalName: string,
+    widthProp: number,
+    filterTags: boolean,
+    numberIfRecordsToBeShown: number
 }

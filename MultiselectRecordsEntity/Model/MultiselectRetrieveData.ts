@@ -4,17 +4,15 @@ export class MultiselectModel {
     /**
      * Retrieves data if the filter is of type: ?$filter
      */
-    public static GetDataFromApi(context: ComponentFramework.Context<IInputs>, entityName: string, filter: string) {
+    public static GetDataFromApi(context: ComponentFramework.Context<IInputs>, entityName: string, filter: string, showRecordsToBeShown: number) {
         return context.webAPI.retrieveMultipleRecords(entityName, filter)
             .then(function (results) {
                 // If the results are == or less than 50 GO FOR IT
-
-                if (results != null && results.entities != null && results.entities.length > 0 && results.entities.length <= 50) {
+                if (results != null && results.entities != null && results.entities.length > 0 && results.entities.length <= showRecordsToBeShown) {
                     return results?.entities;
                 }
-                // If results are more than 50 break
-
-                if (results.entities.length > 50) {
+                 // If results are more than 50 break
+                 if (results.entities.length > showRecordsToBeShown) {
                     return -1;
                 }
                 // If no results
@@ -25,15 +23,15 @@ export class MultiselectModel {
     /**
      * Retrieves data if the filter is of type <fetchxml...>
      */
-    public static GetDataFromApiWithFetchXml(context: ComponentFramework.Context<IInputs>, entityName: string, fetchxml: string) {
+    public static GetDataFromApiWithFetchXml(context: ComponentFramework.Context<IInputs>, entityName: string, fetchxml: string, showRecordsToBeShown: number) {
         return context.webAPI.retrieveMultipleRecords(entityName, "?fetchXml=" + fetchxml)
             .then(function (results) {
                 // If the results are == or less than 50 GO FOR IT
-                if (results != null && results.entities != null && results.entities.length > 0 && results.entities.length <= 50) {
+                if (results != null && results.entities != null && results.entities.length > 0 && results.entities.length <= showRecordsToBeShown) {
                     return results?.entities;
                 }
                 // If results are more than 50 break
-                if (results.entities.length > 50) {
+                if (results.entities.length > showRecordsToBeShown) {
                     return -1;
                 }
                 // If no results
@@ -54,7 +52,9 @@ export class MultiselectModel {
     /**
      * Mock data when this._isFake = true in index.ts
      */
-    public static GetDataFromMock() {
-        return Promise.resolve(mockData);
+    public static GetDataFromMock(filter: any) {
+        var mockDataFiltered = mockData.filter(x => x.name.toLowerCase().includes(filter.toLowerCase()))
+        return Promise.resolve(mockDataFiltered);
+
     }
 }
