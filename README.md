@@ -35,6 +35,10 @@ What have been the improvements with the previous version?
 
 [DOWNLOAD PREVIOUS RELEASE](https://github.com/victorsolaya/Multiselect_Records_PCF/releases/tag/v0.9.53)
 
+-------------------------
+
+[CODE FROM PREVIOUS RELEASE](https://github.com/victorsolaya/Multiselect_Records_PCF/tree/v0.9.53)
+
 ## How to configure
 
 1. Add the control to the field that will contain the data split by your delimiter.
