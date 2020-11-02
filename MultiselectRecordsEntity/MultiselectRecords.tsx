@@ -34,7 +34,9 @@ const MultiselectRecords = (props: IMultiselectProps) => {
     useEffect(() => {
         async function DoOnLoad() {
             const recordsRetrieved: any = await getRecordsFromTextField();
-            setSelectedItems(recordsRetrieved.entities);
+            if(recordsRetrieved.entities.length > 0) {
+                setSelectedItems(recordsRetrieved.entities);
+            }
         }
         DoOnLoad();
     },[])
@@ -461,33 +463,37 @@ const getRecordsFromTextField = async () => {
      * Selects the rows
      */
     const selectIndexFromNames = (recordsProp: any = null): void => {
-
-        var values = JSON.parse(textFieldValue)
-        const arrayAllItems = recordsProp != null ? recordsProp : listItems != null && listItems.length > 0 ? listItems : recordsProp;
-        if(arrayAllItems != null && arrayAllItems.length > 0) {
-
-            for (var item of values.reverse()) {
-                var itemFiltered = arrayAllItems.filter((x: any) => x[props.attributeid] == item["id"]);
-                var index = arrayAllItems.findIndex((x: any) => x[props.attributeid] == item["id"]);
-                if(index != -1) {
-                    arrayAllItems.splice(index, 1);
-                    arrayAllItems.unshift(itemFiltered[0]);
-                }
-            }
+        if(textFieldValue == "") {
+            setTextFieldValue("[]")
             
-            const copy = arrayAllItems.slice();
-            selection.setItems([],true);
-            setListItems(copy.slice());
-            selection.setItems(copy.slice(),true);
+        } else {
+            var values = JSON.parse(textFieldValue)
+            const arrayAllItems = recordsProp != null ? recordsProp : listItems != null && listItems.length > 0 ? listItems : recordsProp;
+            if(arrayAllItems != null && arrayAllItems.length > 0) {
 
-            for(let item of selectedItems) {
-                const indexItem = copy.findIndex((x:any) => item[props.attributeid] == x[props.attributeid])
-                if(indexItem != -1) {
-                    selection.setIndexSelected(parseInt(indexItem), true, true);
+                for (var item of values.reverse()) {
+                    var itemFiltered = arrayAllItems.filter((x: any) => x[props.attributeid] == item["id"]);
+                    var index = arrayAllItems.findIndex((x: any) => x[props.attributeid] == item["id"]);
+                    if(index != -1) {
+                        arrayAllItems.splice(index, 1);
+                        arrayAllItems.unshift(itemFiltered[0]);
+                    }
                 }
-            }
-           
+                
+                const copy = arrayAllItems.slice();
+                selection.setItems([],true);
+                setListItems(copy.slice());
+                selection.setItems(copy.slice(),true);
+
+                for(let item of selectedItems) {
+                    const indexItem = copy.findIndex((x:any) => item[props.attributeid] == x[props.attributeid])
+                    if(indexItem != -1) {
+                        selection.setIndexSelected(parseInt(indexItem), true, true);
+                    }
+                }
             
+                
+            }
         }
     }
 
