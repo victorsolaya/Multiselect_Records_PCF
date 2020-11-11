@@ -3,11 +3,16 @@ import * as React from "react";
 import { Stack, IDetailsRowProps, IRenderFunction, CommandBarButton, PrimaryButton, IIconProps, TextField, DetailsList, DetailsListLayoutMode, Selection, SelectionMode, initializeIcons, Spinner, SpinnerSize, IconButton } from 'office-ui-fabric-react/lib';
 import { textFieldStyles } from './MultiselectRecords.styles'
 import { IMultiselectProps } from './MultiselectRecords.types'
-import { useEffect, useState } from "react";
-const clearIcon: IIconProps = { iconName: 'Clear' };
-const acceptIcon: IIconProps = { iconName: 'Accept', styles: { root: { color: 'white' } } };
+import { useEffect, useState, useRef } from "react";
+import { Utilities } from './Utilities/Utilities';
 
 const MultiselectRecords = (props: IMultiselectProps) => {
+    const refSearchInput = useRef(null);
+    const clearIcon: IIconProps = { iconName: 'Clear' };
+    const acceptIcon: IIconProps = { iconName: 'Accept', styles: { root: { color: 'white' } } };
+    const searchIcon: IIconProps = { iconName: 'Search' };
+
+    let timeout: any = 0;
     initializeIcons();
     // STATE
     const [showList, setShowList] = useState(false);
@@ -211,16 +216,28 @@ const getRecordsFromTextField = async () => {
     const _showSearchTextField = (): JSX.Element => {
         if (props.isControlVisible) {
             return (
-                <TextField className={"text"}
-                    onChange={filterRecords}
-                    width={props.widthProp}
-                    autoComplete="off"
-                    value={searchValue}
-                    styles={{ root: { flex: 1, position: 'relative', marginTop: 10 } }}
-                    disabled={props.isControlDisabled}
-                    placeholder="Search..."
-                    errorMessage={errorMessage}
-                />
+                <>
+                    <TextField className={"text"}
+                        componentRef={refSearchInput}
+                        onChange={filterRecords}
+                        width={props.widthProp}
+                        autoComplete="off"
+                        styles={{ root: { flex: 1, position: 'relative', marginTop: 10 } }}
+                        disabled={props.isControlDisabled}
+                        placeholder="Search..."
+                        errorMessage={errorMessage}
+                    />
+                    <PrimaryButton
+                     iconProps={searchIcon}
+                      title="Search"
+                       ariaLabel="Search" 
+                       onClick={filterRecordsClick} 
+                       cellPadding={0}
+                       width={40}
+                       
+                       styles={{ root: { position: 'relative', marginTop: 10, padding:0, minWidth:40 } }}
+/>
+                </>
             );
         } else {
             return (
@@ -357,43 +374,51 @@ const getRecordsFromTextField = async () => {
     /**
      * Main trigger when the searchbox is changed
      */
-    const filterRecords = async (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>): Promise<any> => {
-        // Get the target
-        const target = event.target as HTMLTextAreaElement;
+    const filterRecords = async (): Promise<any> => {
         //Set the value of our textfield to the input
-        setSearchValue(target.value);
-        // Send filter outside
-        const recordsRetrieved: any = await props.triggerFilter(target.value);
-        const myItemsFromTextField = getTextFieldJSON()
-        if(props.filterTags == true) {
-            if(myItemsFromTextField.length > 0 && target.value != "" && target.value != null && recordsRetrieved != -1 && recordsRetrieved != -2) {
-                const intersection = myItemsFromTextField.filter((x:any) => recordsRetrieved.some((y:any) => y[props.attributeid] === JSON.parse(x).id))
-                setMyItems(intersection);
-            } else if(target.value == "" || target.value == null) {
-                setMyItems(myItemsFromTextField);
-            }
-        }
-        
-        if(recordsRetrieved != -1 && recordsRetrieved != -2) {
-            setIsError(0)
-            // setListItems(recordsRetrieved);
-            // selection.setItems(recordsRetrieved)
-            
-            setRecords(recordsRetrieved);
-            setSelectedItemsWhenOpened(recordsRetrieved);
-            if(showList == false) {
-                setShowList(true)
-            }
-            
-        } else {
-            setListItems([]);
-            selection.setItems([])
-            setShowList(false)
-            const numberOfError = recordsRetrieved
-            setIsError(numberOfError);
-        }
+        clearTimeout(timeout);
+        timeout = setTimeout(async () => {
+            await filterRecordsClick();
+        }, 500);
     };
 
+    const filterRecordsClick = async () => {
+        const searchInputRef: any = refSearchInput.current;
+            let searchInputValue = searchInputRef.value
+            setSearchValue(searchInputValue);
+
+            // Send filter outside
+            const recordsRetrieved: any = await props.triggerFilter(searchInputValue);
+            const myItemsFromTextField = getTextFieldJSON()
+            if(props.filterTags == true) {
+                if(myItemsFromTextField.length > 0 && searchInputValue != "" && searchInputValue != null && recordsRetrieved != -1 && recordsRetrieved != -2) {
+                    const intersection = myItemsFromTextField.filter((x:any) => recordsRetrieved.some((y:any) => y[props.attributeid] === JSON.parse(x).id))
+                    setMyItems(intersection);
+                } else if(searchInputValue == "" || searchInputValue == null) {
+                    setMyItems(myItemsFromTextField);
+                }
+            }
+            
+            if(recordsRetrieved != -1 && recordsRetrieved != -2) {
+                setIsError(0)
+                // setListItems(recordsRetrieved);
+                // selection.setItems(recordsRetrieved)
+                
+                setRecords(recordsRetrieved);
+                setSelectedItemsWhenOpened(recordsRetrieved);
+                if(showList == false) {
+                    setShowList(true)
+                }
+                
+            } else {
+                setListItems([]);
+                selection.setItems([])
+                setShowList(false)
+                const numberOfError = recordsRetrieved
+                setIsError(numberOfError);
+            }
+    }
+        
     /**
      * Event when the select elements is clicked
      */
@@ -463,10 +488,10 @@ const getRecordsFromTextField = async () => {
      * Selects the rows
      */
     const selectIndexFromNames = (recordsProp: any = null): void => {
-        if(textFieldValue == "") {
-            setTextFieldValue("[]")
-            
-        } else {
+        if(textFieldValue != "") {
+            if(!Utilities.isJson(textFieldValue)) {
+                return;
+            }
             var values = JSON.parse(textFieldValue)
             const arrayAllItems = recordsProp != null ? recordsProp : listItems != null && listItems.length > 0 ? listItems : recordsProp;
             if(arrayAllItems != null && arrayAllItems.length > 0) {
