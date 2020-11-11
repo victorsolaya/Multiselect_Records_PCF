@@ -31,8 +31,8 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 	private _isFake: boolean;
 	private _entityRecordId: string;
 	private _entityRecordName: string;
-  private _filterDynamicValues: string;
-  private _populatedFieldVisible: "True" | "False";
+	private _filterDynamicValues: string;
+	private _populatedFieldVisible: "True" | "False";
 	private props: any = {
 		records: [],
 		eventOnChangeValue: this.eventOnChangeValue.bind(this),

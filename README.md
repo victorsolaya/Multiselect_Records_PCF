@@ -17,7 +17,11 @@ What have been the improvements with the previous version?
 
 - (Better filtering) If you have many records selected, you can filter based on the name so you can check that record is there or you can remove it from your selection. Image will be provided in order to show you this.
 
-- (Removed is mUltiple porperty) Removed Is Multiple property since it wasn't needed for a MULTI selector. 😄
+- (Searching button) (**v1.0.0.3**) (Thanks to yauheni-nechayeu for the feedback) It was not pretty obviuous how you could search, so it has been included a button just in case you want to do the same functionality
+
+- (Searching performance) (**v1.0.0.3**) Right now, the query is not triggered everytime you put a new letter, the searching will be triggered once you have stopped typing for a wee bit.
+
+- (Removed is multiple property) Removed "Is Multiple" property since it wasn't needed for a MULTI selector. 😄
 
 - (Filter tags) Added property to filter the tags
 
@@ -43,7 +47,7 @@ What have been the improvements with the previous version?
 
 1. Add the control to the field that will contain the data split by your delimiter.
 2. The parameters of the control are explained below
-3. **My suggestion is to bound this control to a Multitext Area since the JSON can be quite long in order to contain everything**
+3. **My suggestion is to bound this control to a Multitext Area since the JSON can be quite long in order to contain everything** Or put the Single Text field with 2000 characters or so
 
 ## Parameters
 
