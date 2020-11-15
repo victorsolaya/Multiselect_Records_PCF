@@ -55,6 +55,9 @@ const MultiselectRecords = (props: IMultiselectProps) => {
 const getRecordsFromTextField = async () => {
     let filter = `$filter=`;
         const fieldValueArray = getTextFieldJSON();
+        if(fieldValueArray.length == 0) {
+            return null;
+        }
         for(let fieldValue of fieldValueArray) {
             if(fieldValue != null) {
                 filter += `${props.attributeid} eq ${JSON.parse(fieldValue)["id"]} or `
@@ -66,12 +69,12 @@ const getRecordsFromTextField = async () => {
         return recordsRetrieved;
 }
 
-    const setSelectedItemsWhenOpened = async(recordsPassedParam: any) => {
+    const setSelectedItemsWhenOpened = async(recordsPassedParam: any = null) => {
         const recordsRetrieved: any = await getRecordsFromTextField();
         const recordsPassedParamCopy = recordsPassedParam.slice();
         
-        if(recordsRetrieved.entities.length != 0 ) {
-            const selectedItemsWhenOpened: any = recordsRetrieved.entities;
+        if(recordsPassedParamCopy != null || recordsRetrieved != null && recordsRetrieved.entities.length != 0 ) {
+            const selectedItemsWhenOpened: any = recordsRetrieved != null ? recordsRetrieved.entities : [];
             for (var item of selectedItemsWhenOpened) {
                 var itemFiltered = recordsPassedParamCopy.filter((x: any) => x[props.attributeid] == item[props.attributeid]);
                 var index = recordsPassedParamCopy.findIndex((x: any) => x[props.attributeid] == item[props.attributeid]);
@@ -226,6 +229,7 @@ const getRecordsFromTextField = async () => {
                         disabled={props.isControlDisabled}
                         placeholder="Search..."
                         errorMessage={errorMessage}
+                        onKeyUp={enterFilterRecords}
                     />
                     <PrimaryButton
                      iconProps={searchIcon}
@@ -374,7 +378,7 @@ const getRecordsFromTextField = async () => {
     /**
      * Main trigger when the searchbox is changed
      */
-    const filterRecords = async (): Promise<any> => {
+    const filterRecords = (): void => {
         //Set the value of our textfield to the input
         clearTimeout(timeout);
         timeout = setTimeout(async () => {
@@ -417,6 +421,12 @@ const getRecordsFromTextField = async () => {
                 const numberOfError = recordsRetrieved
                 setIsError(numberOfError);
             }
+    }
+
+    const enterFilterRecords = (event: any): void => {
+        if(event.key === 'Enter'){
+            filterRecords();
+        }
     }
         
     /**
