@@ -25,6 +25,8 @@
       <value name="popup" display-name-key="As a popup" description-key="In a pop up">Pop up</value>
       <value name="sameWindow" display-name-key="In the same window" description-key="In the same window">In the same window</value>
       <value name="newWindow" display-name-key="In a new window" description-key="In a new window">In a new window</value>
+      <value name="readOnly" display-name-key="Read only" description-key="Read only">Read only</value>
+
     </property>
 
     <property name="populatedFieldVisible" display-name-key="Populated Field Visible" description-key="Is the field that gets populated visible?" of-type="Enum" usage="input" required="true">

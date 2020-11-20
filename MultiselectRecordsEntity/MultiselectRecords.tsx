@@ -340,7 +340,7 @@ const getRecordsFromTextField = async () => {
                     entityId: id,
                     openInNewWindow: false
                   });
-            } else {
+            } else if(props.openWindow.toLowerCase() == "pop up") {
                 (Xrm.Navigation as any).navigateTo(
                     {
                     entityName: logicalName,
@@ -352,10 +352,12 @@ const getRecordsFromTextField = async () => {
                 );
             }
         } else {
-          Xrm.Navigation.openForm({
-            entityName: logicalName,
-            entityId: id,
-          });
+            if(props.openWindow.toLowerCase() != "read only") {
+                Xrm.Navigation.openForm({
+                    entityName: logicalName,
+                    entityId: id,
+                });
+            }
         }
     } 
 
