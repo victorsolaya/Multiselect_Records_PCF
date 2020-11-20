@@ -75,6 +75,8 @@ What have been the improvements with the previous version?
 
 12. Amount of records to be shown as maximum (optional) -> This will set the amount of records your list will show. By default is going to be 50, but you can set as much as you want.
 
+13. Read-only Tags (optional) -> This will make the tags stop opening the lookup values. 
+
 ## Filter section
 
 This is a quite important section because this will allow us to not retrieve all the data from an entity.
