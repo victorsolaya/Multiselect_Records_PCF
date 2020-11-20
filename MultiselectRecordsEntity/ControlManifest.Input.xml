@@ -36,7 +36,10 @@
       <value name="false" display-name-key="False" description-key="false">False</value>
     </property>
     <property name="recordsToBeReturned" display-name-key="Amount of records to be shown as maximum" description-key="Set the number of records to be shown in the list as maximum. By default 50" of-type="Whole.None" usage="input" required="false" />
-
+    <property name="readOnlyTags" display-name-key="Read-only Tags" description-key="Do you want to make the tags read-only?" of-type="Enum" usage="input" required="true">
+      <value name="false" display-name-key="False" description-key="false">False</value>
+      <value name="true" display-name-key="True" description-key="true">True</value>
+    </property>
     
     <resources>
       <code path="index.ts" order="1"/>
