@@ -6,7 +6,6 @@ import { MultiselectModel } from './Model/MultiselectRetrieveData';
 import { Utilities } from './Utilities/Utilities';
 export class MultiselectRecordsEntity implements ComponentFramework.StandardControl<IInputs, IOutputs> {
 	private _filterTags: string;
-	private _readonlyTags: string;
 	private _numberOfRecordsToBeShown: number;
 
 	/**
@@ -50,8 +49,7 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		logicalName: "",
 		openWindow: "",
 		widthProp: 200,
-		filterTags: true,
-		readonlyTags: false
+		filterTags: true
 	}
 
 	/**
@@ -95,8 +93,6 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		this.props.openWindow = this._context.parameters.openFormOptions.raw || "Pop up";
 		this._filterTags = this._context.parameters.filterTags.raw || "True";
 		this.props.filterTags = this._filterTags == "True" ? true : false;
-		this._readonlyTags = this._context.parameters.readonlyTags.raw || "True";
-		this.props.readonlyTags = this._readonlyTags == "True" ? true : false;
 		this._numberOfRecordsToBeShown = this._context.parameters.recordsToBeReturned.raw || 50;
 		this.props.numberIfRecordsToBeShown = this._numberOfRecordsToBeShown;
 		context.mode.trackContainerResize(true);
