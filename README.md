@@ -67,7 +67,7 @@ What have been the improvements with the previous version?
 
 8. Header Visible (required)-> Set if the header will be visible in the list displayed.
 
-9. Open Form Options (required) -> This allows you to choose how to open the record when you perform an onClick. Options are: Popup, New Window, Same Window.
+9. Open Form Options (required) -> This allows you to choose how to open the record when you perform an onClick. Options are: Popup, New Window, Same Window or No Action.
 
 10. Populated Field Visible (required)-> Set if the field that gets populated will be visible. **NOTE: As now it is a JSON I would suggest to always set is as False. (It is the first option to appear when you select the dropdown)**
 
