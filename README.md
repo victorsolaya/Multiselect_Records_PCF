@@ -67,15 +67,13 @@ What have been the improvements with the previous version?
 
 8. Header Visible (required)-> Set if the header will be visible in the list displayed.
 
-9. Open Form Options (required) -> This allows you to choose how to open the record when you perform an onClick. Options are: Popup, New Window, Same Window.
+9. Open Form Options (required) -> This allows you to choose how to open the record when you perform an onClick. Options are: Popup, New Window, Same Window or No Action.
 
 10. Populated Field Visible (required)-> Set if the field that gets populated will be visible. **NOTE: As now it is a JSON I would suggest to always set is as False. (It is the first option to appear when you select the dropdown)**
 
 11. Filter tags (required) -> You can set if the tags above will be filtered as well when you type or not.
 
 12. Amount of records to be shown as maximum (optional) -> This will set the amount of records your list will show. By default is going to be 50, but you can set as much as you want.
-
-13. Read-only Tags (optional) -> This will make the tags stop opening the lookup values. 
 
 ## Filter section
 
