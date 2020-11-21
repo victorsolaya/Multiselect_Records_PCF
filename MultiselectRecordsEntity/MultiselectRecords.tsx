@@ -331,46 +331,42 @@ const getRecordsFromTextField = async () => {
           Number.parseFloat(version[0] + "." + version[1]) >= 9.1 &&
           Number.parseFloat(version[2] + "." + version[3]) >= 0.15631
         ) {
-            if (!props.readonlyTags)
+            switch (props.openWindow.toLowerCase())
             {
-                switch (props.openWindow.toLowerCase())
-                {
-                    case "in a new window":
-                        (Xrm.Navigation as any).openForm({
-                            entityName: logicalName,
-                            entityId: id,
-                            openInNewWindow: true
-                          });
+                case "no action":
                     break;
-                    case "in the same window":
-                        (Xrm.Navigation as any).openForm({
-                            entityName: logicalName,
-                            entityId: id,
-                            openInNewWindow: false
-                          });
-                        break;
-                    default:
-                    case "in a pop up":
-                        (Xrm.Navigation as any).navigateTo(
-                            {
-                            entityName: logicalName,
-                            pageType: "entityrecord",
-                            formType: 2,
-                            entityId: id,
-                            },
-                            { target: 2, position: 1, width: { value: 80, unit: "%" } },
-                        );
-                        break;
+                case "in a new window":
+                    (Xrm.Navigation as any).openForm({
+                        entityName: logicalName,
+                        entityId: id,
+                        openInNewWindow: true
+                        });
+                break;
+                case "in the same window":
+                    (Xrm.Navigation as any).openForm({
+                        entityName: logicalName,
+                        entityId: id,
+                        openInNewWindow: false
+                        });
+                    break;
+                default:
+                case "in a pop up":
+                    (Xrm.Navigation as any).navigateTo(
+                        {
+                        entityName: logicalName,
+                        pageType: "entityrecord",
+                        formType: 2,
+                        entityId: id,
+                        },
+                        { target: 2, position: 1, width: { value: 80, unit: "%" } },
+                    );
+                    break;
                 }
-            }
         } else {
-            if (!props.readonlyTags)
-            {
-                Xrm.Navigation.openForm({
-                    entityName: logicalName,
-                    entityId: id,
-                  });
-            }
+            Xrm.Navigation.openForm({
+                entityName: logicalName,
+                entityId: id,
+                });
         }
     } 
 
