@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <manifest>
-  <control namespace="VictorSanchez" constructor="MultiselectRecordsEntity" version="0.0.23" display-name-key="Multiselect Records Entity" description-key="Multiple selector for several records and insert in a string" control-type="standard">
+  <control namespace="VictorSanchez" constructor="MultiselectRecordsEntity" version="0.0.24" display-name-key="Multiselect Records Entity" description-key="Multiple selector for several records and insert in a string" control-type="standard">
     <!-- property node identifies a specific, configurable piece of data that the control expects from CDS -->
      <type-group name="textareas">
         <type>SingleLine.Text</type>
@@ -22,7 +22,7 @@
     </property>
 
     <property name="openFormOptions" display-name-key="How do you want to open the form?" description-key="How do you want to open the form when you click the record?" of-type="Enum" usage="input" required="true">
-      <value name="noAcion" display-name-key="No action" description-key="Disable the action">No action</value>
+      <value name="noAction" display-name-key="No action" description-key="Disable the action">No action</value>
       <value name="popup" display-name-key="As a popup" description-key="In a pop up">Pop up</value>
       <value name="sameWindow" display-name-key="In the same window" description-key="In the same window">In the same window</value>
       <value name="newWindow" display-name-key="In a new window" description-key="In a new window">In a new window</value>

@@ -363,10 +363,12 @@ const getRecordsFromTextField = async () => {
                     break;
                 }
         } else {
-            Xrm.Navigation.openForm({
-                entityName: logicalName,
-                entityId: id,
-                });
+            if(props.openWindow.toLowerCase() != "no action") {
+                Xrm.Navigation.openForm({
+                    entityName: logicalName,
+                    entityId: id,
+                    });
+            }
         }
     } 
 
