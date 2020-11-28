@@ -152,8 +152,6 @@ const getRecordsFromTextField = async () => {
         let selectedItemsCopy: any = selectedItems;
         if(row.classList.contains("is-selected")) {
             row.classList.remove("is-selected");
-            console.log(item[props.attributeid] + " - " + selectedItemsCopy + " - " + selectedItems);
-
             selectedItemsCopy = selectedItems.filter( (x:any) => x[props.attributeid] != item[props.attributeid])
         } else {
             row.classList.add("is-selected");
@@ -164,7 +162,6 @@ const getRecordsFromTextField = async () => {
         if(selectedItemsCopy.length > 0) {
             selectedItemsCopy = selectedItemsCopy.filter((a: any, b: any) => selectedItemsCopy.indexOf(a) === b)
         }
-        console.log(selectedItemsCopy);
         setSelectedItems(selectedItemsCopy);
     }
 
