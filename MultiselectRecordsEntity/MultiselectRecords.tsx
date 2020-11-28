@@ -8,6 +8,7 @@ import { Utilities } from './Utilities/Utilities';
 
 const MultiselectRecords = (props: IMultiselectProps) => {
     const refSearchInput = useRef(null);
+    const listRef = useRef(null);
     const clearIcon: IIconProps = { iconName: 'Clear' };
     const acceptIcon: IIconProps = { iconName: 'Accept', styles: { root: { color: 'white' } } };
     const searchIcon: IIconProps = { iconName: 'Search' };
@@ -140,7 +141,7 @@ const getRecordsFromTextField = async () => {
      */
     const onRenderRow = (props: IDetailsRowProps, defaultRender?: IRenderFunction<IDetailsRowProps>): JSX.Element => {
         return (
-            <div data-selection-toggle="true">
+            <div data-selection-toggle="true" onClick={() => onClickRow}>
                 {defaultRender && defaultRender(props)}
             </div>
         );
@@ -148,10 +149,10 @@ const getRecordsFromTextField = async () => {
 
     const onClickRow = async (item: any, index: number, event: React.FocusEvent<HTMLElement>) => {
         const row = event.target;
-
         let selectedItemsCopy: any = selectedItems;
         if(row.classList.contains("is-selected")) {
             row.classList.remove("is-selected");
+            console.log(item[props.attributeid] + " - " + selectedItemsCopy + " - " + selectedItems);
 
             selectedItemsCopy = selectedItems.filter( (x:any) => x[props.attributeid] != item[props.attributeid])
         } else {
@@ -160,7 +161,10 @@ const getRecordsFromTextField = async () => {
             selectedItemsCopy.push(item)
         }
         //Remove duplicates
-        selectedItemsCopy = selectedItemsCopy.filter((a: any, b: any) => selectedItemsCopy.indexOf(a) === b)
+        if(selectedItemsCopy.length > 0) {
+            selectedItemsCopy = selectedItemsCopy.filter((a: any, b: any) => selectedItemsCopy.indexOf(a) === b)
+        }
+        console.log(selectedItemsCopy);
         setSelectedItems(selectedItemsCopy);
     }
 
@@ -293,8 +297,8 @@ const getRecordsFromTextField = async () => {
                         ariaLabelForSelectionColumn="Toggle selection"
                         checkButtonAriaLabel="Checkbox"
                         onRenderRow={onRenderRow}
-                        onActiveItemChanged={onClickRow}
-                        
+                       
+                        componentRef={listRef}
                         styles={{
                             root: {
                                 width: props.width,
@@ -387,8 +391,15 @@ const getRecordsFromTextField = async () => {
     /**
      * Main trigger when the searchbox is changed
      */
-    const filterRecords = (): void => {
+    const filterRecords = (event: React.FormEvent | null): void => {
         //Set the value of our textfield to the input
+        if(event != null) {
+            if((event.target as any).value == "" || (event.target as any).value == null) {
+                setIsError(0);
+                setShowList(false)
+                return;
+            }
+        }
         clearTimeout(timeout);
         timeout = setTimeout(async () => {
             await filterRecordsClick();
@@ -426,15 +437,15 @@ const getRecordsFromTextField = async () => {
             } else {
                 setListItems([]);
                 selection.setItems([])
-                setShowList(false)
                 const numberOfError = recordsRetrieved
                 setIsError(numberOfError);
+                setShowList(false)
             }
     }
 
     const enterFilterRecords = (event: any): void => {
         if(event.key === 'Enter'){
-            filterRecords();
+            filterRecords(null);
         }
     }
         
@@ -446,6 +457,8 @@ const getRecordsFromTextField = async () => {
         setMyItems(valueToBeAssigned);
         setTextFieldValue("[" + valueToBeAssigned.toString() + "]")
         props.eventOnChangeValue("[" + valueToBeAssigned.toString() + "]") ;
+        setIsError(0);
+        setShowList(false);
     }
 
     const getTextFieldJSON = () => {
@@ -476,18 +489,27 @@ const getRecordsFromTextField = async () => {
         const text: any = JSON.stringify(filteredText);
         setTextFieldValue(text)
         setMyItems(filteredTextString);
+        setIsError(0);
         setShowList(false)
         props.triggerFilter("")
         props.eventOnChangeValue(text);
     }
 
+    
+    const removeDuplicatesFromArray = (arr: []) => [...new Set(
+        arr.map(el => JSON.stringify(el))
+      )].map(e => JSON.parse(e));
+
     /**
      * Method to fill the selected items from the box
      */
     const fillSelectedItems = (): any => {
-        const listSelection: any = selectedItems;
+        
+        let listSelection: any = selectedItems ;
+        listSelection = listSelection.concat(selection.getSelection());
         const listArray: any = Array.isArray(listSelection) ? listSelection : [listSelection];
-        const arrayItems: [] = listArray;
+        const arrayItems:any[] = removeDuplicatesFromArray(listArray);
+          
         setSelectedRecordItems([])
         let selectedRecordItemsCopy: any = [];
         let selectedItemsCopy: any = [];
@@ -549,6 +571,7 @@ const getRecordsFromTextField = async () => {
         setListItems([])
         const copyItems = getTextFieldJSON();
         setMyItems(copyItems);
+        setIsError(0);
         setShowList(false)
         props.triggerFilter("")
     }
