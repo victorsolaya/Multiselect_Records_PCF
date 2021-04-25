@@ -1,4 +1,4 @@
-import { ITextFieldStyleProps, ITextFieldStyles } from 'office-ui-fabric-react/lib/TextField';
+import { ITextFieldStyleProps, ITextFieldStyles } from '@fluentui/react/lib/TextField';
 export const textFieldStyles = (props: ITextFieldStyleProps): Partial<ITextFieldStyles> => ({
     fieldGroup: {
         border: props.focused ? "1px solid black !important" : "1px solid transparent !important",

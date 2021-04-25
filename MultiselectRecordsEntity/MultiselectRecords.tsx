@@ -1,10 +1,20 @@
 import * as React from "react";
 
-import { Stack, IDetailsRowProps, IRenderFunction, CommandBarButton, PrimaryButton, IIconProps, TextField, DetailsList, DetailsListLayoutMode, Selection, SelectionMode, initializeIcons, Spinner, SpinnerSize, IconButton } from 'office-ui-fabric-react/lib';
+import { Stack, IDetailsRowProps, IRenderFunction, CommandBarButton, PrimaryButton, IIconProps, initializeIcons, Spinner, SpinnerSize, IconButton, TooltipHost } from '@fluentui/react';
+import { TextField } from '@fluentui/react/lib/TextField';
+import {
+    DetailsList,
+    DetailsListLayoutMode,
+    IDetailsColumnRenderTooltipProps,
+    IDetailsHeaderProps,
+    Selection,
+} from '@fluentui/react/lib/DetailsList';
 import { textFieldStyles } from './MultiselectRecords.styles'
 import { IMultiselectProps } from './MultiselectRecords.types'
 import { useEffect, useState, useRef } from "react";
 import { Utilities } from './Utilities/Utilities';
+import { ScrollablePane, ScrollbarVisibility } from '@fluentui/react/lib/ScrollablePane';
+import { Sticky, StickyPositionType } from '@fluentui/react/lib/Sticky';
 
 const MultiselectRecords = (props: IMultiselectProps) => {
     const refSearchInput = useRef(null);
@@ -28,7 +38,7 @@ const MultiselectRecords = (props: IMultiselectProps) => {
     const [records, setRecords] = useState(props.records !== -1 ? props.records : []);
     const [isError, setIsError] = useState(0)
     const [errorMessage, setErrorMessage] = useState("")
-    
+    const [containerHeight, setContainerHeight] = useState(props.heightProp || null)
     // EFFECT
     useEffect(() => {
         setItemsFromTextFieldValue();
@@ -40,12 +50,12 @@ const MultiselectRecords = (props: IMultiselectProps) => {
     useEffect(() => {
         async function DoOnLoad() {
             const recordsRetrieved: any = await getRecordsFromTextField();
-            if(recordsRetrieved.entities.length > 0) {
+            if (recordsRetrieved.entities.length > 0) {
                 setSelectedItems(recordsRetrieved.entities);
             }
         }
         DoOnLoad();
-    },[])
+    }, [])
 
     useEffect(() => {
         const errorMessageText = isError === 0 ? "" : isError === -1 ? `More than ${props.numberIfRecordsToBeShown} records have been retrieved. Please, make it less or equals ${props.numberIfRecordsToBeShown}.` : "There are no records to be shown";
@@ -53,46 +63,50 @@ const MultiselectRecords = (props: IMultiselectProps) => {
     }, [isError])
 
     // FUNCTIONS
-const getRecordsFromTextField = async () => {
-    let filter = `$filter=`;
+    const getRecordsFromTextField = async () => {
+        let filter = `$filter=`;
         const fieldValueArray = getTextFieldJSON();
-        if(fieldValueArray.length == 0) {
+        if (fieldValueArray.length == 0) {
             return null;
         }
-        for(let fieldValue of fieldValueArray) {
-            if(fieldValue != null) {
+        for (let fieldValue of fieldValueArray) {
+            if (fieldValue != null) {
                 filter += `${props.attributeid} eq ${JSON.parse(fieldValue)["id"]} or `
             }
         }
         filter = filter.substring(0, filter.length - 4);
-        const addFilter = filter == "$filter=" ? "" : `&${filter}`;
-        const recordsRetrieved: any = await Xrm.WebApi.retrieveMultipleRecords(props.logicalName, `?$select=${props.attributeid},${props.data}${addFilter}`)
+        const addFilter = filter == "$filter=" ? "" : `${filter}`;
+        const recordsRetrieved: any = await Xrm.WebApi.retrieveMultipleRecords(props.logicalName, `?${addFilter}`)
         return recordsRetrieved;
-}
+    }
 
-    const setSelectedItemsWhenOpened = async(recordsPassedParam: any = null) => {
+    const setSelectedItemsWhenOpened = async (recordsPassedParam: any = null) => {
         const recordsRetrieved: any = await getRecordsFromTextField();
-        const recordsPassedParamCopy = recordsPassedParam.slice();
-        
-        if(recordsPassedParamCopy != null || recordsRetrieved != null && recordsRetrieved.entities.length != 0 ) {
+        let recordsPassedParamCopy = recordsPassedParam.slice();
+
+        if (recordsPassedParamCopy != null || recordsRetrieved != null && recordsRetrieved.entities.length != 0) {
             const selectedItemsWhenOpened: any = recordsRetrieved != null ? recordsRetrieved.entities : [];
             for (var item of selectedItemsWhenOpened) {
                 var itemFiltered = recordsPassedParamCopy.filter((x: any) => x[props.attributeid] == item[props.attributeid]);
                 var index = recordsPassedParamCopy.findIndex((x: any) => x[props.attributeid] == item[props.attributeid]);
-                if(index != -1) {
+                if (index != -1) {
                     recordsPassedParamCopy.splice(index, 1);
                     recordsPassedParamCopy.unshift(itemFiltered[0]);
+                } else {
+                    recordsPassedParamCopy.unshift(item);
                 }
             }
+            recordsPassedParamCopy = recordsPassedParamCopy.filter((a: any, b: any) => recordsPassedParamCopy.indexOf(a) === b)
+
             //setSelectedItems(selectedItemsWhenOpened);
             setListItems(recordsPassedParamCopy);
             selection.setItems(recordsPassedParamCopy);
-            let selectedItemsConcat:any = selectedItemsWhenOpened.concat(selectedItems);
+            let selectedItemsConcat: any = selectedItemsWhenOpened.concat(selectedItems);
             selectedItemsConcat = selectedItemsConcat.filter((a: any, b: any) => selectedItemsConcat.indexOf(a) === b)
 
-            for(let item of selectedItemsConcat) {
-                const indexItem = recordsPassedParamCopy.findIndex((x:any) => item[props.attributeid] == x[props.attributeid])
-                if(indexItem != -1) {
+            for (let item of selectedItemsConcat) {
+                const indexItem = recordsPassedParamCopy.findIndex((x: any) => item[props.attributeid] == x[props.attributeid])
+                if (indexItem != -1) {
                     selection.setIndexSelected(parseInt(indexItem), true, true);
                 }
             }
@@ -100,16 +114,16 @@ const getRecordsFromTextField = async () => {
     }
 
     const setItemsFromRecordsIfNull = () => {
-        if(listItems.length == 0) {
+        if (listItems.length == 0) {
             setListItems(records);
         }
-        
+
     }
     const setItemsFromTextFieldValue = () => {
         let valuesInTheTextField: any = []
-        if(textFieldValue != null && textFieldValue != "" && textFieldValue != "[]") {
+        if (textFieldValue != null && textFieldValue != "" && textFieldValue != "[]") {
             let textFieldTemp = JSON.parse(textFieldValue);
-            for(var item of textFieldTemp) {
+            for (var item of textFieldTemp) {
                 valuesInTheTextField.push(JSON.stringify(item));
             }
         }
@@ -119,14 +133,14 @@ const getRecordsFromTextField = async () => {
     const selectRecordItemsAndPushThem = () => {
         selection.setAllSelected(false);
         let itemsSelected: any = []
-        if(selectedRecordItems != null && selectedRecordItems.length > 0) {
-            for(var selectedRecordItem of selectedRecordItems) {
+        if (selectedRecordItems != null && selectedRecordItems.length > 0) {
+            for (var selectedRecordItem of selectedRecordItems) {
                 itemsSelected.push(selectedRecordItem);
             }
         } else {
-            if(textFieldValue != "" && textFieldValue != "[]") {
+            if (textFieldValue != "" && textFieldValue != "[]") {
                 let textFieldTemp = JSON.parse(textFieldValue);
-                for(var item of textFieldTemp) {
+                for (var item of textFieldTemp) {
                     itemsSelected.push(JSON.stringify(item));
                 }
                 setMyItems(itemsSelected)
@@ -141,25 +155,26 @@ const getRecordsFromTextField = async () => {
      */
     const onRenderRow = (props: IDetailsRowProps, defaultRender?: IRenderFunction<IDetailsRowProps>): JSX.Element => {
         return (
-            <div data-selection-toggle="true" onClick={() => onClickRow}>
+            <div data-selection-toggle="true" className="rowCustom" onClick={(event: any) => onClickRow(props.item, event)}>
                 {defaultRender && defaultRender(props)}
             </div>
         );
     };
 
-    const onClickRow = async (item: any, index: number, event: React.FocusEvent<HTMLElement>) => {
-        const row = event.target;
+    const onClickRow = async (item: any, event: React.FocusEvent<HTMLElement>) => {
+        const rowTarget: any = event.currentTarget
+        const row: any = rowTarget.firstElementChild.classList;
         let selectedItemsCopy: any = selectedItems;
-        if(row.classList.contains("is-selected")) {
-            row.classList.remove("is-selected");
-            selectedItemsCopy = selectedItems.filter( (x:any) => x[props.attributeid] != item[props.attributeid])
+        if (row.contains("is-selected")) {
+            row.remove("is-selected");
+            selectedItemsCopy = selectedItems.filter((x: any) => x[props.attributeid] != item[props.attributeid])
         } else {
-            row.classList.add("is-selected");
+            row.add("is-selected");
             selectedItemsCopy = selectedItems;
             selectedItemsCopy.push(item)
         }
         //Remove duplicates
-        if(selectedItemsCopy.length > 0) {
+        if (selectedItemsCopy.length > 0) {
             selectedItemsCopy = selectedItemsCopy.filter((a: any, b: any) => selectedItemsCopy.indexOf(a) === b)
         }
         setSelectedItems(selectedItemsCopy);
@@ -178,6 +193,7 @@ const getRecordsFromTextField = async () => {
                     styles={textFieldStyles}
                     disabled={props.isControlDisabled}
                     placeholder="---"
+                    data-custom-id="main-custom-field"
                 />
             );
         } else {
@@ -190,28 +206,28 @@ const getRecordsFromTextField = async () => {
     /**
      * Renders the main text
      */
-    const _showSecondaryTextField =(): JSX.Element => {
+    const _showSecondaryTextField = (): JSX.Element => {
         if (props.isControlVisible) {
-            if(textFieldValue != ""  && textFieldValue != "[]") {
+            if (textFieldValue != "" && textFieldValue != "[]") {
                 return (
                     <Stack gap="5" horizontal wrap maxWidth={props.widthProp}>
-                        {myItems != null && myItems.length > 0 && myItems.map( (item: any ) => {
+                        {myItems != null && myItems.length > 0 && myItems.map((item: any) => {
                             const theItem = JSON.parse(item);
                             return (
-                                <Stack horizontal style={{border:"1px solid #106EBE"}}>
-                                    <PrimaryButton className="buttonContainer" style={{borderRadius: 0}} key={theItem.id} data-id={theItem.id} text={theItem.name} onClick={triggerItemClick} />
-                                    <IconButton primary iconProps={clearIcon} title="Clear" ariaLabel="Clear" onClick={removeFieldValue}/>
+                                <Stack horizontal style={{ border: "1px solid #106EBE" }}>
+                                    <PrimaryButton className="buttonContainer" style={{ borderRadius: 0 }} key={theItem.id} data-id={theItem.id} text={theItem.name} onClick={triggerItemClick} />
+                                    <IconButton primary iconProps={clearIcon} title="Clear" ariaLabel="Clear" onClick={removeFieldValue} data-custom-id="button-custom-clear" />
                                 </Stack>
                             )
                         })}
                     </Stack>
                 );
+            }
         }
-    }
         return (
             <></>
         );
-        
+
     }
 
     /**
@@ -231,17 +247,19 @@ const getRecordsFromTextField = async () => {
                         placeholder="Search..."
                         errorMessage={errorMessage}
                         onKeyUp={enterFilterRecords}
+                        data-custom-id="search-custom-field"
                     />
                     <PrimaryButton
-                     iconProps={searchIcon}
-                      title="Search"
-                       ariaLabel="Search" 
-                       onClick={filterRecordsClick} 
-                       cellPadding={0}
-                       width={40}
-                       
-                       styles={{ root: { position: 'relative', marginTop: 10, padding:0, minWidth:40 } }}
-/>
+                        iconProps={searchIcon}
+                        title="Search"
+                        ariaLabel="Search"
+                        onClick={filterRecordsClick}
+                        cellPadding={0}
+                        width={40}
+
+                        styles={{ root: { position: 'relative', marginTop: 10, padding: 0, minWidth: 40 } }}
+                        data-custom-id="button-custom-search"
+                    />
                 </>
             );
         } else {
@@ -251,61 +269,85 @@ const getRecordsFromTextField = async () => {
         }
     }
 
+    const onRenderDetailsHeader: IRenderFunction<IDetailsHeaderProps> = (props, defaultRender) => {
+        if (!props) {
+          return null;
+        }
+        const onRenderColumnHeaderTooltip: IRenderFunction<IDetailsColumnRenderTooltipProps> = tooltipHostProps => (
+          <TooltipHost {...tooltipHostProps} />
+        );
+        return (
+          <Sticky stickyPosition={StickyPositionType.Header} isScrollSynced>
+            {defaultRender!({
+              ...props,
+              onRenderColumnHeaderTooltip,
+            })}
+          </Sticky>
+        );
+      };
+
     /**
      * Renders the list and the buttons
      */
     const _showDetailsList = (): JSX.Element => {
 
         if (listItems.length > 0 && showList == true) {
-
+            const height = (containerHeight != null && containerHeight !== -1) ? `${containerHeight}px` : "100%";
             return (
                 <Stack>
-                    <div style={{display: 'flex', justifyContent: 'space-between', flex: 1, alignContent: 'space-between' }}>
-                        <CommandBarButton iconProps={acceptIcon} text="Select Elements" onClick={setFieldValue} styles={{
-                            root: {
-                                flex: 1,
-                                padding: 10,
-                                zIndex: 1995,
-                                backgroundColor: '#0078D4',
-                                color: 'white',
-                                textAlign: 'left'
-                            }
-                        }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1, alignContent: 'space-between' }}>
+                        <CommandBarButton
+                            data-custom-id="button-custom-select-elements"
+                            iconProps={acceptIcon} text="Select Elements" onClick={setFieldValue} styles={{
+                                root: {
+                                    flex: 1,
+                                    padding: 10,
+                                    zIndex: 1995,
+                                    backgroundColor: '#0078D4',
+                                    color: 'white',
+                                    textAlign: 'left'
+                                }
 
-                        <CommandBarButton iconProps={clearIcon} text="Close" onClick={clearItems} styles={{
-                            root: {
-                                flex: 1,
-                                padding: 10,
-                                zIndex: 1995,
-                                backgroundColor: 'lightgrey',
-                                textAlign: 'left'
-                            }
-                        }} />
+                            }} />
+
+                        <CommandBarButton
+                            data-custom-id="button-custom-close"
+                            iconProps={clearIcon} text="Close" onClick={clearItems} styles={{
+                                root: {
+                                    flex: 1,
+                                    padding: 10,
+                                    zIndex: 1995,
+                                    backgroundColor: 'lightgrey',
+                                    textAlign: 'left'
+                                }
+                            }} />
 
                     </div>
-                    <DetailsList
-                        isHeaderVisible={props.headerVisible}
-                        items={listItems}
-                        columns={props.columns}
-                        setKey="set"
-                        selection={selection}
-                        layoutMode={DetailsListLayoutMode.justified}
-                        selectionPreservedOnEmptyClick={true}
-                        ariaLabelForSelectionColumn="Toggle selection"
-                        checkButtonAriaLabel="Checkbox"
-                        onRenderRow={onRenderRow}
-                       
-                        componentRef={listRef}
-                        styles={{
-                            root: {
-                                width: props.width,
-                                flex: 1,
-                                position: 'absolute',
-                                zIndex: 1995,
-                                boxShadow: "rgba(0, 0, 0, 0.133) 0px 0px 7.2px 0px, rgba(0, 0, 0, 0.11) 0px 0px 1.8px 0px"
-                            }
-                        }}
-                    /></Stack>
+
+                    <Sticky stickyPosition={StickyPositionType.Header} isScrollSynced={true} >
+                        <Stack grow verticalFill className="container" style={{ height, width: props.widthProp }}>
+                            <Stack.Item grow className="gridContainer" >
+                                <ScrollablePane scrollbarVisibility={ScrollbarVisibility.auto} >
+                                    <DetailsList
+                                        data-custom-id="list-custom-data"
+                                        isHeaderVisible={props.headerVisible}
+                                        items={listItems}
+                                        columns={props.columns}
+                                        setKey="set"
+                                        selection={selection}
+                                        layoutMode={DetailsListLayoutMode.justified}
+                                        selectionPreservedOnEmptyClick={true}
+                                        ariaLabelForSelectionColumn="Toggle selection"
+                                        checkButtonAriaLabel="Checkbox"
+                                        onRenderRow={onRenderRow}
+                                        componentRef={listRef}
+                                       onRenderDetailsHeader={onRenderDetailsHeader}
+                                    />
+                                </ScrollablePane>
+                            </Stack.Item>
+                        </Stack>
+                    </Sticky>
+                </Stack>
             )
         } else {
             return (
@@ -314,26 +356,25 @@ const getRecordsFromTextField = async () => {
         }
     }
 
-    const triggerItemClick = (a:any):void => {
+    const triggerItemClick = (a: any): void => {
         const dataid = a.currentTarget.getAttribute("data-id")
-        openRecord(props.logicalName, dataid); 
+        openRecord(props.logicalName, dataid);
     }
 
-    const openRecord =(logicalName: string, id: string): void => {
+    const openRecord = (logicalName: string, id: string): void => {
         const version = Xrm.Utility.getGlobalContext()
-          .getVersion()
-          .split(".");
+            .getVersion()
+            .split(".");
         const mobile = Xrm.Utility.getGlobalContext().client.getClient() == "Mobile";
         // MFD (main form dialog) is available past ["9", "1", "0000", "15631"]
         // But doesn't work on mobile client
         if (
-          !mobile &&
-          version.length == 4 &&
-          Number.parseFloat(version[0] + "." + version[1]) >= 9.1 &&
-          Number.parseFloat(version[2] + "." + version[3]) >= 0.15631
+            !mobile &&
+            version.length == 4 &&
+            Number.parseFloat(version[0] + "." + version[1]) >= 9.1 &&
+            Number.parseFloat(version[2] + "." + version[3]) >= 0.15631
         ) {
-            switch (props.openWindow.toLowerCase())
-            {
+            switch (props.openWindow.toLowerCase()) {
                 case "no action":
                     break;
                 case "in a new window":
@@ -341,37 +382,37 @@ const getRecordsFromTextField = async () => {
                         entityName: logicalName,
                         entityId: id,
                         openInNewWindow: true
-                        });
-                break;
+                    });
+                    break;
                 case "in the same window":
                     (Xrm.Navigation as any).openForm({
                         entityName: logicalName,
                         entityId: id,
                         openInNewWindow: false
-                        });
+                    });
                     break;
                 default:
                 case "in a pop up":
                     (Xrm.Navigation as any).navigateTo(
                         {
-                        entityName: logicalName,
-                        pageType: "entityrecord",
-                        formType: 2,
-                        entityId: id,
+                            entityName: logicalName,
+                            pageType: "entityrecord",
+                            formType: 2,
+                            entityId: id,
                         },
                         { target: 2, position: 1, width: { value: 80, unit: "%" } },
                     );
                     break;
-                }
+            }
         } else {
-            if(props.openWindow.toLowerCase() != "no action") {
+            if (props.openWindow.toLowerCase() != "no action") {
                 Xrm.Navigation.openForm({
                     entityName: logicalName,
                     entityId: id,
-                    });
+                });
             }
         }
-    } 
+    }
 
     /**
      * When the main field is changed
@@ -390,8 +431,8 @@ const getRecordsFromTextField = async () => {
      */
     const filterRecords = (event: React.FormEvent | null): void => {
         //Set the value of our textfield to the input
-        if(event != null) {
-            if((event.target as any).value == "" || (event.target as any).value == null) {
+        if (event != null) {
+            if ((event.target as any).value == "" || (event.target as any).value == null) {
                 setIsError(0);
                 setShowList(false)
                 return;
@@ -405,47 +446,47 @@ const getRecordsFromTextField = async () => {
 
     const filterRecordsClick = async () => {
         const searchInputRef: any = refSearchInput.current;
-            let searchInputValue = searchInputRef.value
-            setSearchValue(searchInputValue);
+        let searchInputValue = searchInputRef.value
+        setSearchValue(searchInputValue);
 
-            // Send filter outside
-            const recordsRetrieved: any = await props.triggerFilter(searchInputValue);
-            const myItemsFromTextField = getTextFieldJSON()
-            if(props.filterTags == true) {
-                if(myItemsFromTextField.length > 0 && searchInputValue != "" && searchInputValue != null && recordsRetrieved != -1 && recordsRetrieved != -2) {
-                    const intersection = myItemsFromTextField.filter((x:any) => recordsRetrieved.some((y:any) => y[props.attributeid] === JSON.parse(x).id))
-                    setMyItems(intersection);
-                } else if(searchInputValue == "" || searchInputValue == null) {
-                    setMyItems(myItemsFromTextField);
-                }
+        // Send filter outside
+        const recordsRetrieved: any = await props.triggerFilter(searchInputValue);
+        const myItemsFromTextField = getTextFieldJSON()
+        if (props.filterTags == true) {
+            if (myItemsFromTextField.length > 0 && searchInputValue != "" && searchInputValue != null && recordsRetrieved != -1 && recordsRetrieved != -2) {
+                const intersection = myItemsFromTextField.filter((x: any) => recordsRetrieved.some((y: any) => y[props.attributeid] === JSON.parse(x).id))
+                setMyItems(intersection);
+            } else if (searchInputValue == "" || searchInputValue == null) {
+                setMyItems(myItemsFromTextField);
             }
-            
-            if(recordsRetrieved != -1 && recordsRetrieved != -2) {
-                setIsError(0)
-                // setListItems(recordsRetrieved);
-                // selection.setItems(recordsRetrieved)
-                
-                setRecords(recordsRetrieved);
-                setSelectedItemsWhenOpened(recordsRetrieved);
-                if(showList == false) {
-                    setShowList(true)
-                }
-                
-            } else {
-                setListItems([]);
-                selection.setItems([])
-                const numberOfError = recordsRetrieved
-                setIsError(numberOfError);
-                setShowList(false)
+        }
+
+        if (recordsRetrieved != -1 && recordsRetrieved != -2) {
+            setIsError(0)
+            // setListItems(recordsRetrieved);
+            // selection.setItems(recordsRetrieved)
+
+            setRecords(recordsRetrieved);
+            setSelectedItemsWhenOpened(recordsRetrieved);
+            if (showList == false) {
+                setShowList(true)
             }
+
+        } else {
+            setListItems([]);
+            selection.setItems([])
+            const numberOfError = recordsRetrieved
+            setIsError(numberOfError);
+            setShowList(false)
+        }
     }
 
     const enterFilterRecords = (event: any): void => {
-        if(event.key === 'Enter'){
+        if (event.key === 'Enter') {
             filterRecords(null);
         }
     }
-        
+
     /**
      * Event when the select elements is clicked
      */
@@ -453,16 +494,16 @@ const getRecordsFromTextField = async () => {
         const valueToBeAssigned: any = fillSelectedItems()[0];
         setMyItems(valueToBeAssigned);
         setTextFieldValue("[" + valueToBeAssigned.toString() + "]")
-        props.eventOnChangeValue("[" + valueToBeAssigned.toString() + "]") ;
+        props.eventOnChangeValue("[" + valueToBeAssigned.toString() + "]");
         setIsError(0);
         setShowList(false);
     }
 
     const getTextFieldJSON = () => {
         let myItemsCopy: any = [];
-        if(textFieldValue != "" && textFieldValue != "[]") {
+        if (textFieldValue != "" && textFieldValue != "[]") {
             let textFieldTemp = JSON.parse(textFieldValue);
-            for(var item of textFieldTemp) {
+            for (var item of textFieldTemp) {
                 myItemsCopy.push(JSON.stringify(item));
             }
         }
@@ -475,15 +516,17 @@ const getRecordsFromTextField = async () => {
     const removeFieldValue = (event: any): void => {
         const selectedRecordItemsCopy = fillSelectedItems()[1];
         const id = event.currentTarget.parentElement.getElementsByClassName('buttonContainer')[0].getAttribute("data-id");
-        const filterItemsWithoutTheRemovedOne: any = selectedRecordItemsCopy.filter( (myItem: any) => myItem[props.attributeid] != id).map((x: any) => x);
-        const filterSelectedItemsWithoutTheRemovedOne: any = selectedItems.filter( (myItem: any) => myItem[props.attributeid] != id).map((x: any) => x);
+        const filterItemsWithoutTheRemovedOne: any = selectedRecordItemsCopy.filter((myItem: any) => myItem[props.attributeid] != id).map((x: any) => x);
+        const filterSelectedItemsWithoutTheRemovedOne: any = selectedItems.filter((myItem: any) => myItem[props.attributeid] != id).map((x: any) => x);
 
         setSelectedRecordItems(filterItemsWithoutTheRemovedOne)
         setSelectedItems(filterSelectedItemsWithoutTheRemovedOne)
         setSearchValue("")
-        const filteredText = JSON.parse(textFieldValue).filter( (myItem: any) => myItem["id"] != id).map((x: any) => x)
-        const filteredTextString = filteredText.map((x:any) => JSON.stringify(x));
-        const text: any = JSON.stringify(filteredText);
+        debugger
+        const filteredText = JSON.parse(textFieldValue).filter((myItem: any) => myItem["id"] != id).map((x: any) => x)
+        const filteredTextString = filteredText.map((x: any) => JSON.stringify(x));
+        let text: any = JSON.stringify(filteredText);
+        text = text !== "[]" ? text: "";
         setTextFieldValue(text)
         setMyItems(filteredTextString);
         setIsError(0);
@@ -492,31 +535,31 @@ const getRecordsFromTextField = async () => {
         props.eventOnChangeValue(text);
     }
 
-    
+
     const removeDuplicatesFromArray = (arr: []) => [...new Set(
         arr.map(el => JSON.stringify(el))
-      )].map(e => JSON.parse(e));
+    )].map(e => JSON.parse(e));
 
     /**
      * Method to fill the selected items from the box
      */
     const fillSelectedItems = (): any => {
-        
-        let listSelection: any = selectedItems ;
+
+        let listSelection: any = selectedItems;
         listSelection = listSelection.concat(selection.getSelection());
         const listArray: any = Array.isArray(listSelection) ? listSelection : [listSelection];
-        const arrayItems:any[] = removeDuplicatesFromArray(listArray);
-          
+
         setSelectedRecordItems([])
         let selectedRecordItemsCopy: any = [];
         let selectedItemsCopy: any = [];
-
-        for (let item of arrayItems) {
-            
-            selectedRecordItemsCopy.push(item);
-            let json = { "id": item[props.attributeid], "name": item[props.data]}
-            
-            selectedItemsCopy.push(JSON.stringify(json));
+        let guidsAdded: string[] = [];
+        for (let item of listArray) {
+            if (!guidsAdded.includes(item[props.attributeid])) {
+                selectedRecordItemsCopy.push(item);
+                let json = { "id": item[props.attributeid], "name": item[props.data] }
+                guidsAdded.push(item[props.attributeid]);
+                selectedItemsCopy.push(JSON.stringify(json));
+            }
         }
         setSelectedRecordItems(selectedRecordItemsCopy);
         return [selectedItemsCopy, selectedRecordItemsCopy];
@@ -526,36 +569,34 @@ const getRecordsFromTextField = async () => {
      * Selects the rows
      */
     const selectIndexFromNames = (recordsProp: any = null): void => {
-        if(textFieldValue != "") {
-            if(!Utilities.isJson(textFieldValue)) {
+        if (textFieldValue != "") {
+            if (!Utilities.isJson(textFieldValue)) {
                 return;
             }
             var values = JSON.parse(textFieldValue)
             const arrayAllItems = recordsProp != null ? recordsProp : listItems != null && listItems.length > 0 ? listItems : recordsProp;
-            if(arrayAllItems != null && arrayAllItems.length > 0) {
+            if (arrayAllItems != null && arrayAllItems.length > 0) {
 
                 for (var item of values.reverse()) {
                     var itemFiltered = arrayAllItems.filter((x: any) => x[props.attributeid] == item["id"]);
                     var index = arrayAllItems.findIndex((x: any) => x[props.attributeid] == item["id"]);
-                    if(index != -1) {
+                    if (index != -1) {
                         arrayAllItems.splice(index, 1);
                         arrayAllItems.unshift(itemFiltered[0]);
                     }
                 }
-                
-                const copy = arrayAllItems.slice();
-                selection.setItems([],true);
-                setListItems(copy.slice());
-                selection.setItems(copy.slice(),true);
 
-                for(let item of selectedItems) {
-                    const indexItem = copy.findIndex((x:any) => item[props.attributeid] == x[props.attributeid])
-                    if(indexItem != -1) {
+                const copy = arrayAllItems.slice();
+                selection.setItems([], true);
+                setListItems(copy.slice());
+                selection.setItems(copy.slice(), true);
+
+                for (let item of selectedItems) {
+                    const indexItem = copy.findIndex((x: any) => item[props.attributeid] == x[props.attributeid])
+                    if (indexItem != -1) {
                         selection.setIndexSelected(parseInt(indexItem), true, true);
                     }
                 }
-            
-                
             }
         }
     }
@@ -564,6 +605,7 @@ const getRecordsFromTextField = async () => {
      * When close button is triggered
      */
     const clearItems = (): void => {
+        debugger
         setSearchValue("")
         setListItems([])
         const copyItems = getTextFieldJSON();
@@ -573,27 +615,27 @@ const getRecordsFromTextField = async () => {
         props.triggerFilter("")
     }
 
-     /**
-         * If _allItems is more than 0 then we will create the list.
-         * _allItems will populate once it request from fetch
-         */
-        return (
-            <div className={"divContainer"}>
-                <div className={"control"} >
-                    {props.populatedFieldVisible == true ? <Stack horizontal>
-                        {_showMainTextField()}
-                    </Stack> : <></>}
-                    <Stack horizontal>
-                        {_showSecondaryTextField()}
-                    </Stack>
-                    <Stack horizontal>
-                        {_showSearchTextField()}
-                    </Stack>
-                    {_showDetailsList()}
+    /**
+        * If _allItems is more than 0 then we will create the list.
+        * _allItems will populate once it request from fetch
+        */
+    return (
+        <div className={"divContainer"}>
+            <div className={"control"} >
+                {props.populatedFieldVisible == true ? <Stack horizontal>
+                    {_showMainTextField()}
+                </Stack> : <></>}
+                <Stack horizontal>
+                    {_showSecondaryTextField()}
+                </Stack>
+                <Stack horizontal>
+                    {_showSearchTextField()}
+                </Stack>
+                {_showDetailsList()}
 
-                </div>
             </div>
-        );
+        </div>
+    );
 }
 
 export default MultiselectRecords;

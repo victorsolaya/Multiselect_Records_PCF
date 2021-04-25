@@ -30,6 +30,7 @@ export interface IMultiselectProps {
     records: any,
     logicalName: string,
     widthProp: number,
+    heightProp: number,
     filterTags: boolean,
     numberIfRecordsToBeShown: number
 }

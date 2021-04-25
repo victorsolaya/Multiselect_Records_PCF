@@ -49,6 +49,7 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		logicalName: "",
 		openWindow: "",
 		widthProp: 200,
+		heightProp: 500,
 		filterTags: true
 	}
 
@@ -110,6 +111,7 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		this.props.isControlDisabled = context.mode.isControlDisabled;
 		this.props.isControlVisible = context.mode.isVisible;
 		this.props.widthProp = context.mode.allocatedWidth;
+		this.props.heightProp = context.mode.allocatedHeight;
 		this.renderElement()
 	}
 

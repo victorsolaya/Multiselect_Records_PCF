@@ -31,6 +31,10 @@ What have been the improvements with the previous version?
 
 - (React hooks) Changed the React into Hooks! (Some help from developers will be really well received to criticize how bad/good this has been done.)
 
+- Included scrollable list pane. (Thanks for the issue @acehaddock)
+
+- Changed old @office fabric ui with @fluentui
+
 ## Download
 
 [DOWNLOAD LATEST RELEASE](https://github.com/victorsolaya/Multiselect_Records_PCF/releases/latest)

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <manifest>
-  <control namespace="VictorSanchez" constructor="MultiselectRecordsEntity" version="0.0.24" display-name-key="Multiselect Records Entity" description-key="Multiple selector for several records and insert in a string" control-type="standard">
+  <control namespace="VictorSanchez" constructor="MultiselectRecordsEntity" version="0.0.26" display-name-key="Multiselect Records Entity" description-key="Multiple selector for several records and insert in a string" control-type="standard">
     <!-- property node identifies a specific, configurable piece of data that the control expects from CDS -->
      <type-group name="textareas">
         <type>SingleLine.Text</type>
@@ -12,7 +12,7 @@
     <property name="data" display-name-key="Data" description-key="Data field from request to be inserted in field" of-type="SingleLine.Text" usage="input" required="true" />
     <property name="attributeid" display-name-key="Main Attribute Id" description-key="Schema name for the main field of the entity you want to retrieve" of-type="SingleLine.Text" usage="input" required="true" />
 
-    <property name="filter" display-name-key="Filter" description-key="Query to filter the results to return." of-type="SingleLine.TextArea" usage="input" required="true" />
+    <property name="filter" display-name-key="Filter" description-key="Query to filter the results to return." of-type-group="textareas" usage="input" required="true" />
     <property name="filterDynamicValues" display-name-key="Field Filter Values" description-key="Fields from the record entity to filter your query split by comma." of-type="SingleLine.Text" usage="input" required="false" />
     
     <property name="columns" display-name-key="Columns" description-key="Columns to be displayed in the list with the following syntax: DisplayName,fieldName;Name,name;Age,age" of-type="SingleLine.Text" usage="input" required="true" />
@@ -40,6 +40,7 @@
    
     <resources>
       <code path="index.ts" order="1"/>
+       <css path="css/MultiselectRecords.css" order="1" />
     </resources>
     <feature-usage>
       <uses-feature name="Utility" required="true" />
