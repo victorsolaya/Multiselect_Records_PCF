@@ -1,3 +1,5 @@
+import { IInputs } from "./generated/ManifestTypes";
+
 export interface IColumnObject {
     key: string,
     name: string,
@@ -32,5 +34,6 @@ export interface IMultiselectProps {
     widthProp: number,
     heightProp: number,
     filterTags: boolean,
-    numberIfRecordsToBeShown: number
+    numberIfRecordsToBeShown: number,
+    context: ComponentFramework.Context<IInputs>
 }

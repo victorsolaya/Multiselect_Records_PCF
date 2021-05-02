@@ -50,7 +50,8 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		openWindow: "",
 		widthProp: 200,
 		heightProp: 500,
-		filterTags: true
+		filterTags: true,
+		context: null
 	}
 
 	/**
@@ -106,12 +107,12 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 	 */
 	public async updateView(context: ComponentFramework.Context<IInputs>): Promise<void> {
 		// Add code to update control view
-		//this.props.records = await MultiselectModel.GetDataFromMock();
 		this.props.inputValue = this._context.parameters.field.raw || null;
 		this.props.isControlDisabled = context.mode.isControlDisabled;
 		this.props.isControlVisible = context.mode.isVisible;
 		this.props.widthProp = context.mode.allocatedWidth;
 		this.props.heightProp = context.mode.allocatedHeight;
+		this.props.context = context;
 		this.renderElement()
 	}
 

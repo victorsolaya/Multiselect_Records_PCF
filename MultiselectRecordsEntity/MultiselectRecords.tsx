@@ -17,12 +17,13 @@ import { ScrollablePane, ScrollbarVisibility } from '@fluentui/react/lib/Scrolla
 import { Sticky, StickyPositionType } from '@fluentui/react/lib/Sticky';
 
 const MultiselectRecords = (props: IMultiselectProps) => {
+    const context = props.context;
+    let temporarySelectedItems: [] | any = [];
     const refSearchInput = useRef(null);
     const listRef = useRef(null);
     const clearIcon: IIconProps = { iconName: 'Clear' };
     const acceptIcon: IIconProps = { iconName: 'Accept', styles: { root: { color: 'white' } } };
     const searchIcon: IIconProps = { iconName: 'Search' };
-
     let timeout: any = 0;
     initializeIcons();
     // STATE
@@ -62,6 +63,11 @@ const MultiselectRecords = (props: IMultiselectProps) => {
         setErrorMessage(errorMessageText);
     }, [isError])
 
+    useEffect(() => {
+
+        setTextFieldValue(props.inputValue || "")
+    }, [props.inputValue])
+
     // FUNCTIONS
     const getRecordsFromTextField = async () => {
         let filter = `$filter=`;
@@ -76,7 +82,7 @@ const MultiselectRecords = (props: IMultiselectProps) => {
         }
         filter = filter.substring(0, filter.length - 4);
         const addFilter = filter == "$filter=" ? "" : `${filter}`;
-        const recordsRetrieved: any = await Xrm.WebApi.retrieveMultipleRecords(props.logicalName, `?${addFilter}`)
+        const recordsRetrieved: any = await context.webAPI.retrieveMultipleRecords(props.logicalName, `?${addFilter}`)
         return recordsRetrieved;
     }
 
@@ -119,15 +125,28 @@ const MultiselectRecords = (props: IMultiselectProps) => {
         }
 
     }
-    const setItemsFromTextFieldValue = () => {
-        let valuesInTheTextField: any = []
-        if (textFieldValue != null && textFieldValue != "" && textFieldValue != "[]") {
-            let textFieldTemp = JSON.parse(textFieldValue);
-            for (var item of textFieldTemp) {
-                valuesInTheTextField.push(JSON.stringify(item));
+    const setItemsFromTextFieldValue = async () => {
+        debugger
+        try {
+            let valuesInTheTextField: any = []
+            if (textFieldValue != null && textFieldValue != "" && textFieldValue != "[]") {
+                let textFieldTemp = JSON.parse(textFieldValue);
+                for (var item of textFieldTemp) {
+                    valuesInTheTextField.push(JSON.stringify(item));
+                }
+            } else {
+                if (textFieldValue == "[]") {
+                    setTextFieldValue("");
+                    props.eventOnChangeValue("");
+                }
             }
+            let itemsThatHaveBeenSelected = await getRecordsFromTextField();
+            itemsThatHaveBeenSelected = itemsThatHaveBeenSelected == null ? [] : itemsThatHaveBeenSelected.entities;
+            setSelectedItems(itemsThatHaveBeenSelected)
+            setMyItems(valuesInTheTextField);
+        } catch (e) {
+            console.log(e);
         }
-        setMyItems(valuesInTheTextField);
     }
 
     const selectRecordItemsAndPushThem = () => {
@@ -164,20 +183,24 @@ const MultiselectRecords = (props: IMultiselectProps) => {
     const onClickRow = async (item: any, event: React.FocusEvent<HTMLElement>) => {
         const rowTarget: any = event.currentTarget
         const row: any = rowTarget.firstElementChild.classList;
-        let selectedItemsCopy: any = selectedItems;
+        const selectedItemsChoose = temporarySelectedItems.length != 0 ? temporarySelectedItems : selectedItems;
+        let selectedItemsCopy: any = selectedItemsChoose;
+
         if (row.contains("is-selected")) {
             row.remove("is-selected");
-            selectedItemsCopy = selectedItems.filter((x: any) => x[props.attributeid] != item[props.attributeid])
+            selectedItemsCopy = selectedItemsChoose.filter((x: any) => x[props.attributeid] != item[props.attributeid])
         } else {
             row.add("is-selected");
-            selectedItemsCopy = selectedItems;
+            selectedItemsCopy = selectedItemsChoose;
             selectedItemsCopy.push(item)
         }
         //Remove duplicates
         if (selectedItemsCopy.length > 0) {
             selectedItemsCopy = selectedItemsCopy.filter((a: any, b: any) => selectedItemsCopy.indexOf(a) === b)
         }
+        temporarySelectedItems = selectedItemsCopy;
         setSelectedItems(selectedItemsCopy);
+        listRef
     }
 
     /**
@@ -271,20 +294,20 @@ const MultiselectRecords = (props: IMultiselectProps) => {
 
     const onRenderDetailsHeader: IRenderFunction<IDetailsHeaderProps> = (props, defaultRender) => {
         if (!props) {
-          return null;
+            return null;
         }
         const onRenderColumnHeaderTooltip: IRenderFunction<IDetailsColumnRenderTooltipProps> = tooltipHostProps => (
-          <TooltipHost {...tooltipHostProps} />
+            <TooltipHost {...tooltipHostProps} />
         );
         return (
-          <Sticky stickyPosition={StickyPositionType.Header} isScrollSynced>
-            {defaultRender!({
-              ...props,
-              onRenderColumnHeaderTooltip,
-            })}
-          </Sticky>
+            <Sticky stickyPosition={StickyPositionType.Header} isScrollSynced>
+                {defaultRender!({
+                    ...props,
+                    onRenderColumnHeaderTooltip,
+                })}
+            </Sticky>
         );
-      };
+    };
 
     /**
      * Renders the list and the buttons
@@ -341,7 +364,7 @@ const MultiselectRecords = (props: IMultiselectProps) => {
                                         checkButtonAriaLabel="Checkbox"
                                         onRenderRow={onRenderRow}
                                         componentRef={listRef}
-                                       onRenderDetailsHeader={onRenderDetailsHeader}
+                                        onRenderDetailsHeader={onRenderDetailsHeader}
                                     />
                                 </ScrollablePane>
                             </Stack.Item>
@@ -423,7 +446,7 @@ const MultiselectRecords = (props: IMultiselectProps) => {
         //Set the value of our textfield to the input
         setTextFieldValue(target.value)
         //This is needed for loading the textFieldValue
-        props.eventOnChangeValue(textFieldValue);
+        props.eventOnChangeValue(target.value);
     }
 
     /**
@@ -522,11 +545,10 @@ const MultiselectRecords = (props: IMultiselectProps) => {
         setSelectedRecordItems(filterItemsWithoutTheRemovedOne)
         setSelectedItems(filterSelectedItemsWithoutTheRemovedOne)
         setSearchValue("")
-        debugger
         const filteredText = JSON.parse(textFieldValue).filter((myItem: any) => myItem["id"] != id).map((x: any) => x)
         const filteredTextString = filteredText.map((x: any) => JSON.stringify(x));
         let text: any = JSON.stringify(filteredText);
-        text = text !== "[]" ? text: "";
+        text = text !== "[]" ? text : "";
         setTextFieldValue(text)
         setMyItems(filteredTextString);
         setIsError(0);
@@ -534,11 +556,6 @@ const MultiselectRecords = (props: IMultiselectProps) => {
         props.triggerFilter("")
         props.eventOnChangeValue(text);
     }
-
-
-    const removeDuplicatesFromArray = (arr: []) => [...new Set(
-        arr.map(el => JSON.stringify(el))
-    )].map(e => JSON.parse(e));
 
     /**
      * Method to fill the selected items from the box
@@ -605,7 +622,6 @@ const MultiselectRecords = (props: IMultiselectProps) => {
      * When close button is triggered
      */
     const clearItems = (): void => {
-        debugger
         setSearchValue("")
         setListItems([])
         const copyItems = getTextFieldJSON();
