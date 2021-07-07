@@ -110,7 +110,7 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		this.props.inputValue = this._context.parameters.field.raw || null;
 		this.props.isControlDisabled = context.mode.isControlDisabled;
 		this.props.isControlVisible = context.mode.isVisible;
-		this.props.widthProp = context.mode.allocatedWidth;
+		this.props.widthProp = context.mode.allocatedWidth - 20;
 		this.props.heightProp = context.mode.allocatedHeight;
 		this.props.context = context;
 		this.renderElement()

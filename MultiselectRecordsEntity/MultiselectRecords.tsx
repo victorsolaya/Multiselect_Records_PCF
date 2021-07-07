@@ -126,7 +126,6 @@ const MultiselectRecords = (props: IMultiselectProps) => {
 
     }
     const setItemsFromTextFieldValue = async () => {
-        debugger
         try {
             let valuesInTheTextField: any = []
             if (textFieldValue != null && textFieldValue != "" && textFieldValue != "[]") {
@@ -315,7 +314,7 @@ const MultiselectRecords = (props: IMultiselectProps) => {
     const _showDetailsList = (): JSX.Element => {
 
         if (listItems.length > 0 && showList == true) {
-            const height = (containerHeight != null && containerHeight !== -1) ? `${containerHeight}px` : "100%";
+            // const height = (containerHeight != null && containerHeight !== -1) ? `${containerHeight}px` : "100%";
             return (
                 <Stack>
                     <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1, alignContent: 'space-between' }}>
@@ -348,9 +347,9 @@ const MultiselectRecords = (props: IMultiselectProps) => {
                     </div>
 
                     <Sticky stickyPosition={StickyPositionType.Header} isScrollSynced={true} >
-                        <Stack grow verticalFill className="container" style={{ height, width: props.widthProp }}>
+                        <Stack grow verticalFill className="container" style={{ width: props.widthProp }}>
                             <Stack.Item grow className="gridContainer" >
-                                <ScrollablePane scrollbarVisibility={ScrollbarVisibility.auto} >
+                                <ScrollablePane className="scrollableContainer" scrollbarVisibility={ScrollbarVisibility.auto} >
                                     <DetailsList
                                         data-custom-id="list-custom-data"
                                         isHeaderVisible={props.headerVisible}
@@ -365,6 +364,7 @@ const MultiselectRecords = (props: IMultiselectProps) => {
                                         onRenderRow={onRenderRow}
                                         componentRef={listRef}
                                         onRenderDetailsHeader={onRenderDetailsHeader}
+                                        className="detailsListClass"
                                     />
                                 </ScrollablePane>
                             </Stack.Item>
@@ -372,6 +372,8 @@ const MultiselectRecords = (props: IMultiselectProps) => {
                     </Sticky>
                 </Stack>
             )
+            
+            
         } else {
             return (
                 <></>
@@ -652,6 +654,7 @@ const MultiselectRecords = (props: IMultiselectProps) => {
             </div>
         </div>
     );
+    
 }
 
 export default MultiselectRecords;

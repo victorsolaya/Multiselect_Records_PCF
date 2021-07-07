@@ -1,13 +1,18 @@
 .VictorSanchez\.MultiselectRecordsEntity .gridContainer{
-    height: 100%;
     overflow-y: auto;
     overflow-x: auto;
     position: relative;
 }
 
 .VictorSanchez\.MultiselectRecordsEntity .container{
-    position: absolute;
-    min-height: 500px;  
+    position: relative;
     box-shadow: rgba(0, 0, 0, 0.133) 0px 0px 7.2px 0px, rgba(0, 0, 0, 0.11) 0px 0px 1.8px 0px;
     z-index: 1995;
+}
+.VictorSanchez\.MultiselectRecordsEntity .scrollableContainer, .VictorSanchez\.MultiselectRecordsEntity .ms-ScrollablePane--contentContainer {
+    position: relative;
+}
+
+.VictorSanchez\.MultiselectRecordsEntity .detailsListClass {
+    max-height: 500px;
 }
