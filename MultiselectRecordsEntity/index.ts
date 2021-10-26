@@ -33,7 +33,7 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 	private _entityRecordId: string;
 	private _entityRecordName: string;
 	private _filterDynamicValues: string;
-	private _filterLookup1stValue: string;
+	private _filterLookup1stValue: ComponentFramework.LookupValue[];
 	private _populatedFieldVisible: "True" | "False";
 	private props: any = {
 		records: [],
@@ -84,7 +84,7 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		this.props.data = this._context.parameters.data.raw || "name";
 		this.props.attributeid = this._context.parameters.attributeid.raw || "accountid";
 		this._filterDynamicValues = this._context.parameters.filterDynamicValues.raw || "";
-		this._filterLookup1stValue = this._context.parameters.filterLookup1stValue.raw || "";
+		this._filterLookup1stValue = this._context.parameters.filterLookup1stValue.raw;
 		const contextPage = (context as any).page;
 		this._entityRecordId = contextPage.entityId;
 		this._entityRecordName = contextPage.entityTypeName;
@@ -169,12 +169,23 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 	 * Parse and fill the new filter with the form values from the entity record
 	 */
 	private filteredUrlFromFormValues(_filter: string): string {
-		if (!this._filterLookup1stValue) {
+		const lookup1stValueId = this.getLookupId(this._filterLookup1stValue);
+		if (!lookup1stValueId) {
 			return _filter;
 		}
 
 		const regex = new RegExp("\\{" + FIELD_FORM_LOOKUP_1ST_INDEX + "\\}", "g")
-		return _filter.replace(regex, this._filterLookup1stValue);
+		return _filter.replace(regex, lookup1stValueId);
+	}
+
+	/**
+	 * Parse and fill the new filter with the form values from the entity record
+	 */
+	private getLookupId(value: ComponentFramework.LookupValue[]): string {
+		if (value?.length === 0)
+			return "";
+
+		return value[0].id;
 	}
 
 	/**

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <manifest>
-  <control namespace="VictorSanchez" constructor="MultiselectRecordsEntity" version="0.0.27" display-name-key="Multiselect Records Entity" description-key="Multiple selector for several records and insert in a string" control-type="standard">
+  <control namespace="VictorSanchez" constructor="MultiselectRecordsEntity" version="0.0.28" display-name-key="Multiselect Records Entity" description-key="Multiple selector for several records and insert in a string" control-type="standard">
     <!-- property node identifies a specific, configurable piece of data that the control expects from CDS -->
      <type-group name="textareas">
         <type>SingleLine.Text</type>
@@ -14,7 +14,7 @@
 
     <property name="filter" display-name-key="Filter" description-key="Query to filter the results to return." of-type-group="textareas" usage="input" required="true" />
     <property name="filterDynamicValues" display-name-key="Field Filter Values" description-key="Fields from the record entity to filter your query split by comma." of-type="SingleLine.Text" usage="input" required="false" />
-    <property name="filterLookup1stValue" display-name-key="Field Filter Form Lookup 1st Value" description-key="Field value from the record's form to filter your query. Used as {100} in filter." of-type="SingleLine.Text" usage="input" required="false" />
+    <property name="filterLookup1stValue" display-name-key="Field Filter Form Lookup 1st Value" description-key="Field value from the record form to filter your query. Used as index 100 in filter." of-type="Lookup.Simple" usage="input" required="false" />
     
     <property name="columns" display-name-key="Columns" description-key="Columns to be displayed in the list with the following syntax: DisplayName,fieldName;Name,name;Age,age" of-type-group="textareas" usage="input" required="true" />
     <property name="headerVisible" display-name-key="Header Visible" description-key="Is the header of the columns visible for the list?" of-type="Enum" usage="input" required="true">
