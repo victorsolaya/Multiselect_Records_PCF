@@ -1,9 +1,10 @@
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import MultiselectRecords  from './MultiselectRecords'
+import MultiselectRecords from './MultiselectRecords'
 import { MultiselectModel } from './Model/MultiselectRetrieveData';
 import { Utilities } from './Utilities/Utilities';
+import { FIELD_FORM_LOOKUP_1ST_INDEX } from "./Model/Types";
 export class MultiselectRecordsEntity implements ComponentFramework.StandardControl<IInputs, IOutputs> {
 	private _filterTags: string;
 	private _numberOfRecordsToBeShown: number;
@@ -32,6 +33,7 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 	private _entityRecordId: string;
 	private _entityRecordName: string;
 	private _filterDynamicValues: string;
+	private _filterLookup1stValue: string;
 	private _populatedFieldVisible: "True" | "False";
 	private props: any = {
 		records: [],
@@ -82,12 +84,13 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		this.props.data = this._context.parameters.data.raw || "name";
 		this.props.attributeid = this._context.parameters.attributeid.raw || "accountid";
 		this._filterDynamicValues = this._context.parameters.filterDynamicValues.raw || "";
+		this._filterLookup1stValue = this._context.parameters.filterLookup1stValue.raw || "";
 		const contextPage = (context as any).page;
 		this._entityRecordId = contextPage.entityId;
 		this._entityRecordName = contextPage.entityTypeName;
 
 		this._isFake = false;
-	
+
 		this._populatedFieldVisible = this._context.parameters.populatedFieldVisible.raw || "False";
 		this.props.populatedFieldVisible = this._populatedFieldVisible == "True" ? true : false;
 
@@ -151,6 +154,8 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 	 */
 	private async triggerFilter(newInput: string) {
 		this._filter = this._originalFilter.replace(/\{0\}/g, newInput);
+		this._filter = this.filteredUrlFromFormValues(this._filter);
+
 		if (this._filterDynamicValues != "") {
 			if (this._isFake == false) {
 				this._filter = await this.filteredUrlFromDynamicValues(this._filter);
@@ -161,7 +166,19 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 	}
 
 	/**
-	 * Parsed and fill the new fulter with the dynamic values from the entity record
+	 * Parse and fill the new filter with the form values from the entity record
+	 */
+	private filteredUrlFromFormValues(_filter: string): string {
+		if (!this._filterLookup1stValue) {
+			return _filter;
+		}
+
+		const regex = new RegExp("\\{" + FIELD_FORM_LOOKUP_1ST_INDEX + "\\}", "g")
+		return _filter.replace(regex, this._filterLookup1stValue);
+	}
+
+	/**
+	 * Parse and fill the new filter with the dynamic values from the entity record
 	 */
 	private async filteredUrlFromDynamicValues(_filter: string): Promise<string> {
 		const arrayDynamicValues: string[] = this._filterDynamicValues.split(",");
