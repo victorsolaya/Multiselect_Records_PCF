@@ -235,12 +235,20 @@ const MultiselectRecords = (props: IMultiselectProps) => {
                     <Stack gap="5" horizontal wrap maxWidth={props.widthProp}>
                         {myItems != null && myItems.length > 0 && myItems.map((item: any) => {
                             const theItem = JSON.parse(item);
-                            return (
-                                <Stack horizontal style={{ border: "1px solid #106EBE" }}>
-                                    <PrimaryButton className="buttonContainer" style={{ borderRadius: 0 }} key={theItem.id} data-id={theItem.id} text={theItem.name} onClick={triggerItemClick} />
-                                    <IconButton primary iconProps={clearIcon} title="Clear" ariaLabel="Clear" onClick={removeFieldValue} data-custom-id="button-custom-clear" />
-                                </Stack>
-                            )
+                            if (!props.isControlDisabled) {
+                                return (
+                                    <Stack horizontal style={{ border: "1px solid #106EBE" }}>
+                                        <PrimaryButton className="buttonContainer" style={{ borderRadius: 0 }} key={theItem.id} data-id={theItem.id} text={theItem.name} onClick={triggerItemClick} />
+                                        <IconButton primary iconProps={clearIcon} title="Clear" ariaLabel="Clear" onClick={removeFieldValue} data-custom-id="button-custom-clear" />
+                                    </Stack>
+                                )
+                            } else {
+                                return (
+                                    <Stack horizontal style={{ border: "1px solid #106EBE" }}>
+                                        <PrimaryButton className="buttonContainer" style={{ borderRadius: 0 }} key={theItem.id} data-id={theItem.id} text={theItem.name} onClick={triggerItemClick} />
+                                    </Stack>
+                                )
+                            }
                         })}
                     </Stack>
                 );
@@ -256,7 +264,7 @@ const MultiselectRecords = (props: IMultiselectProps) => {
      * Renders the search box
      */
     const _showSearchTextField = (): JSX.Element => {
-        if (props.isControlVisible) {
+        if (props.isControlVisible && !props.isControlDisabled) {
             return (
                 <>
                     <TextField className={"text"}
@@ -372,8 +380,8 @@ const MultiselectRecords = (props: IMultiselectProps) => {
                     </Sticky>
                 </Stack>
             )
-            
-            
+
+
         } else {
             return (
                 <></>
@@ -654,7 +662,7 @@ const MultiselectRecords = (props: IMultiselectProps) => {
             </div>
         </div>
     );
-    
+
 }
 
 export default MultiselectRecords;
