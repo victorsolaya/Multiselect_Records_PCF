@@ -7,6 +7,7 @@ import { Utilities } from './Utilities/Utilities';
 export class MultiselectRecordsEntity implements ComponentFramework.StandardControl<IInputs, IOutputs> {
 	private _filterTags: string;
 	private _numberOfRecordsToBeShown: number;
+	private _isMultiple: any;
 
 	/**
 	 * Empty constructor.
@@ -51,7 +52,8 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		widthProp: 200,
 		heightProp: 500,
 		filterTags: true,
-		context: null
+		context: null,
+		isMultiple: true
 	}
 
 	/**
@@ -97,6 +99,8 @@ export class MultiselectRecordsEntity implements ComponentFramework.StandardCont
 		this.props.filterTags = this._filterTags == "True" ? true : false;
 		this._numberOfRecordsToBeShown = this._context.parameters.recordsToBeReturned.raw || 50;
 		this.props.numberIfRecordsToBeShown = this._numberOfRecordsToBeShown;
+		const _isMultiple = this._context.parameters.isMultiple.raw || "True";
+		this.props.isMultiple = _isMultiple == "True" ? true : false;
 		context.mode.trackContainerResize(true);
 	}
 

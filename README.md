@@ -8,6 +8,73 @@ This can be useful to retrieve a "list of records".
 
 NOTES: This has been a great step forward from the previous version. If you still want to download the previous one and not this latest one you can clicking in the section [Download Previous Release]
 
+## Version Changes
+
+### v1.0.0.13
+- It has been included the isMultiple based on #35
+### v1.0.0.12
+- Fixed bug when the control is disabled.
+
+      - It has been added to make the X dissapear next to each of the tags so they can't be removed.
+      - The Search text has been removed as well with the lookup.
+
+### v1.0.0.11
+- Fixed layout problems from issue #29
+- Added option in the control [Columns] for Multiple and Single Text Area
+
+### v1.0.0.10
+- Fixed when value is set is not being saved inside the control. #25
+- Fixed when deselecting rows was not being updated correctly, only taking first one.
+
+### v1.0.0.9
+
+- When close each of the items the text field was setting: "[]" in the field. Now it will set "" ✅
+- Because of the issue #24 it has been included a scroll in the list so no matter how many items are. https://user-images.githubusercontent.com/11043789/115994023-a6346200-a5d5-11eb-94e1-8305babf48d8.mp4 ✅
+Included for the #24 in the scrolling the header will be fixed. ✅
+Changed old office UI fabric react with @fluentui/react
+
+### v1.0.0.8
+- Release for selecting columns that are not specified in Data.
+- Changed the bound for the Filter so you can bound to MultipleAreaText and SingleLine.Multiple
+
+### v1.0.0.7
+- Fixed the issue with the onClickRow and records selected when on load list
+### v1.0.0.6
+
+- It is fixed the select all
+- Fixed onClick on row.
+
+### v1.0.0.5
+- It has been implemented new options so the tags are read only instead of opening the record.
+Thanks to https://github.com/Fernandobo21
+
+### v.1.0.0.4
+- Fixed issues on the search of the records
+- Added functionality for the onEnter event in the searchbox to simulate the same as a lookup standard field.
+
+### v1.0.0.3
+- NEW BUTTON SEARCH‼️‼️
+It has been added per issue #14
+
+- Better performance for searching as it has been implemented a check when the user stops typing.
+
+### v1.0.0.1
+- (Visualization) Well, at the very first glance, it is more visual than the previous one. Now, you can navigate to a record instead of displaying some data.
+
+- (Width allocation) It has been set the width of the container, now it will allocate everything between this width. The same as all the items, image will be shown in order to show you this.
+
+- (Better filtering) If you have many records selected, you can filter based on the name so you can check that record is there or you can remove it from your selection. Image will be provided in order to show you this.
+
+- (Removed is Multiple Property) Removed Is Multiple property since it wasn't needed for a MULTI selector. 😄
+
+- (Filter tags) Added property to filter the tags
+
+- (Better selection) Selection of the rows will be kept in a bag waiting for your [Select Elements] on click
+
+- (New property maximum elements returned) Now you can add the amount of records as maximum that will be shown when they are retrieved. By default is going to be 50, but you can set as much as you need.
+
+- (React hooks) Changed the React into Hooks! (Some help from developers will be really well received to criticize how bad/good this has been done.)
+
 ## Improvements
 
 What have been the improvements with the previous version?

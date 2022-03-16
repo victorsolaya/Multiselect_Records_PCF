@@ -8,6 +8,7 @@ import {
     IDetailsColumnRenderTooltipProps,
     IDetailsHeaderProps,
     Selection,
+    SelectionMode,
 } from '@fluentui/react/lib/DetailsList';
 import { textFieldStyles } from './MultiselectRecords.styles'
 import { IMultiselectProps } from './MultiselectRecords.types'
@@ -184,22 +185,25 @@ const MultiselectRecords = (props: IMultiselectProps) => {
         const row: any = rowTarget.firstElementChild.classList;
         const selectedItemsChoose = temporarySelectedItems.length != 0 ? temporarySelectedItems : selectedItems;
         let selectedItemsCopy: any = selectedItemsChoose;
-
-        if (row.contains("is-selected")) {
-            row.remove("is-selected");
-            selectedItemsCopy = selectedItemsChoose.filter((x: any) => x[props.attributeid] != item[props.attributeid])
-        } else {
-            row.add("is-selected");
-            selectedItemsCopy = selectedItemsChoose;
-            selectedItemsCopy.push(item)
-        }
-        //Remove duplicates
-        if (selectedItemsCopy.length > 0) {
-            selectedItemsCopy = selectedItemsCopy.filter((a: any, b: any) => selectedItemsCopy.indexOf(a) === b)
+        if (props.isMultiple === true) {
+            if (row.contains("is-selected")) {
+                row.remove("is-selected");
+                selectedItemsCopy = selectedItemsChoose.filter((x: any) => x[props.attributeid] != item[props.attributeid])
+            } else {
+                row.add("is-selected");
+                selectedItemsCopy = selectedItemsChoose;
+                selectedItemsCopy.push(item)
+            }
+            //Remove duplicates
+            if (selectedItemsCopy.length > 0) {
+                selectedItemsCopy = selectedItemsCopy.filter((a: any, b: any) => selectedItemsCopy.indexOf(a) === b)
+            }
+        } else if(props.isMultiple === false) {
+            selectedItemsCopy = [item];
         }
         temporarySelectedItems = selectedItemsCopy;
         setSelectedItems(selectedItemsCopy);
-        listRef
+
     }
 
     /**
@@ -373,6 +377,7 @@ const MultiselectRecords = (props: IMultiselectProps) => {
                                         componentRef={listRef}
                                         onRenderDetailsHeader={onRenderDetailsHeader}
                                         className="detailsListClass"
+                                        selectionMode={props.isMultiple ? SelectionMode.multiple : SelectionMode.single}
                                     />
                                 </ScrollablePane>
                             </Stack.Item>

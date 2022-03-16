@@ -35,5 +35,6 @@ export interface IMultiselectProps {
     heightProp: number,
     filterTags: boolean,
     numberIfRecordsToBeShown: number,
-    context: ComponentFramework.Context<IInputs>
+    context: ComponentFramework.Context<IInputs>,
+    isMultiple: boolean
 }
